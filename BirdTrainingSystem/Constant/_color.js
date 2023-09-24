@@ -14,18 +14,18 @@ export default  Colors = {
     White: {
         default: '#FFFFFF',
         change: '#FAFAFA'
-    }
-	// blue: {
-	// 	default: '#004d79',
-	// 	alt1: '#1d84c4',
-	// 	alt2: '#0083f9'
-	// },
+    },
+	blue: {
+		default: '#004d79',
+		alt1: '#1d84c4',
+		alt2: '#0083f9'
+	},
 
-	// cyan: {
-	// 	default: '#7ae2ff'
-	// },
+	cyan: {
+		default: '#7ae2ff'
+	},
 
-	// green: {
-	// 	default: '#5b9675'
-	// }
+	green: {
+		default: '#72FDA9'
+	}
 };
