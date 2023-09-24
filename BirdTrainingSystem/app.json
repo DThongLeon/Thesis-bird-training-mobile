@@ -1,4 +1,13 @@
 {
-  "name": "BirdTrainingSystem",
-  "displayName": "BirdTrainingSystem"
+  "expo": {
+    "scheme": "acme",
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "name": "BirdTrainingSystem",
+    "slug": "BirdTrainingSystem"
+  }
 }
