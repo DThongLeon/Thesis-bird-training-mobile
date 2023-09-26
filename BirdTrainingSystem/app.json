@@ -8,11 +8,6 @@
       "expo-router"
     ],
     "name": "BirdTrainingSystem",
-    "slug": "BirdTrainingSystem",
-    "splash": {
-      "image": "./Asset/play_store_512.png",
-      "resizeMode": "contain",
-      "backgroundColor":"#72FDA9"
-    }
+    "slug": "BirdTrainingSystem"
   }
 }
