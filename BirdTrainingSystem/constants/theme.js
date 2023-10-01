@@ -16,6 +16,8 @@ const Colors =  {
 
     green: '#84FBB3',
 
+    grey: '#C1C0C8',
+
     black: '#000000',
     
     red: '#e81e4d',
