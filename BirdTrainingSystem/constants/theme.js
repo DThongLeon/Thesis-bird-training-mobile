@@ -22,6 +22,8 @@ const Colors =  {
     
     red: '#e81e4d',
 
+    darkLight: '#9CA3AF',
+
 }
 
 export {Colors};
