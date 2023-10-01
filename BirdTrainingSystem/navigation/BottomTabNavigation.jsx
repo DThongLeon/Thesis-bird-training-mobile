@@ -4,6 +4,7 @@ import { Home, Search, Profile } from "../screens/index";
 import { Colors } from "../constants/theme";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTheme } from "react-native-paper";
+import { StyleSheet, Text } from "react-native";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -38,16 +39,14 @@ const BottomTabNavigation = () => {
     <Tab.Navigator
       shifting={true}
       activeColor="#e91e63"
-      tab
       barStyle={{
         backgroundColor: Colors.white,
         position: "absolute",
-        bottom: 0,
+        bottom: -10,
         right: 0,
         left: 0,
         elevation: 0,
-        height: 70,
-        width: "auto",
+        height: 60,
       }}
     >
       {tabArr.map((res, index) => {
@@ -61,9 +60,11 @@ const BottomTabNavigation = () => {
                 <MaterialCommunityIcons
                   name={res.icon}
                   color={color}
-                  size={26}
+                  size={24}
+                  style={{top: -10}}
                 />
               ),
+              tabBarLabel: <Text style={styles.tabBarLabel}>{res.label}</Text>
             }}
           />
         );
@@ -71,5 +72,17 @@ const BottomTabNavigation = () => {
     </Tab.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBarLabel: {
+    fontSize: 13,
+    position: 'relative',
+    padding: 0,
+    bottom: 15,
+    color: Colors.black,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+});
 
 export default BottomTabNavigation;

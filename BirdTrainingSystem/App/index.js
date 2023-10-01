@@ -6,6 +6,8 @@ import { useCallback } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabNavigation from "../navigation/BottomTabNavigation";
+import Login from "../screens/Login";
+import  ForgetPassword  from "../screens/ForgetPassword";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,12 +26,32 @@ export default App = () => {
 
   return (
     <NavigationContainer independent={true}>
-      <Stack.Navigator >
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Bottom Navigation"
           component={BottomTabNavigation}
           options={{ 
             headerShown: false ,
+            gestureEnabled: true,
+            gestureDirection: "column",
+            CardStyleInterpolation: "linear"
+          }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ 
+            headerShown: false ,
+            gestureEnabled: true,
+            gestureDirection: "column",
+            CardStyleInterpolation: "linear"
+          }}
+        />
+        <Stack.Screen
+          name="ForgetPassword"
+          component={ForgetPassword}
+          options={{ 
+            headerShown: true ,
             gestureEnabled: true,
             gestureDirection: "column",
             CardStyleInterpolation: "linear"
