@@ -24,6 +24,7 @@ const Colors =  {
 
     darkLight: '#9CA3AF',
 
+    secondary: "#AFEEEE",
 }
 
 export {Colors};
