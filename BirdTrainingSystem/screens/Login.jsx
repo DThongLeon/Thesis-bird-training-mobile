@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ImageBackground,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import styled from "styled-components";
@@ -22,19 +23,17 @@ const Login = ({ navigation }) => {
   const [hidePassword, setHidePassword] = useState(true);
 
   return (
-    <StyledContainer>
-      <StatusBar style="dark" />
-      {/* <BackgroundImage><Text>Start Coding</Text></BackgroundImage> */}
-      <InnerContainer>
-        <LoginLogo
-          resizeMode="cover"
-          source={require("./../Assets/images/bird.jpg")}
-        ></LoginLogo>
-        <LoginPageTitle>Bird-Training System</LoginPageTitle>
-        <SubTitle>Account Login</SubTitle>
-
-        <Formik
-          initialValues={{ email: "", password: "" }}
+    <ScrollView keyboardShouldPersistTaps={"handled"}>
+      <StyledContainer>
+        <StatusBar style="dark" />
+        <InnerContainer>
+          <LoginLogo
+            resizeMode="cover"
+            source={require("./../Assets/images/bird.jpg")}
+          ></LoginLogo>
+          <LoginPageTitle>Bird-Training System</LoginPageTitle>
+          <Formik
+            initialValues={{ email: "", password: "" }}
             // validate={values => {
             //   const errors = {};
             //   if (!values.email) {
@@ -46,67 +45,65 @@ const Login = ({ navigation }) => {
             //   }
             //   return errors;
             // }}
-          onSubmit={(values) => {
-            navigation.navigate("Bottom Navigation", {
-              screen: "BottomTabNavigation"
+            onSubmit={(values) => {
+              navigation.navigate("Bottom Navigation", {
+                screen: "BottomTabNavigation",
+              });
+            }}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+            }) => (
+              <StyledFromArea>
+                <MyTextInput
+                  label={"Email Address"}
+                  icon={"mail"}
+                  placeholder={"abc@gmail.com"}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                  value={values.email}
+                  keyboardType="email-address"
+                >
+                  {/* {errors.email && touched.email && errors.email} */}
+                </MyTextInput>
 
-            });
-          }}
-        >
-          {({ handleChange, handleBlur, handleSubmit, values,errors,touched }) => (
-            <StyledFromArea>
-              <MyTextInput
-                label={"Email Address"}
-                icon={"mail"}
-                placeholder={"abc@gmail.com"}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                value={values.email}
-                keyboardType="email-address"
-              >
-                {/* {errors.email && touched.email && errors.email} */}
-              </MyTextInput>
+                <MyTextInput
+                  label={"Password"}
+                  icon={"lock-closed"}
+                  placeholder={"**********"}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  value={values.password}
+                  secureTextEntry={hidePassword}
+                  isPassword={true}
+                  hidePassword={hidePassword}
+                  setHidePassword={setHidePassword}
+                >
+                  {/* {errors.password && touched.password && errors.password} */}
+                </MyTextInput>
 
-              <MyTextInput
-                label={"Password"}
-                icon={"lock-closed"}
-                placeholder={"**********"}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                value={values.password}
-                secureTextEntry={hidePassword}
-                isPassword={true}
-                hidePassword={hidePassword}
-                setHidePassword={setHidePassword}
-              >
-                {/* {errors.password && touched.password && errors.password} */}
-              </MyTextInput>
+                <ButtonLogin onPress={handleSubmit}>
+                  <ButtonText>Login</ButtonText>
+                </ButtonLogin>
+                <Line />
 
-              <ButtonLogin onPress={handleSubmit}>
-                <ButtonText>Login</ButtonText>
-              </ButtonLogin>
-              <Line />
-
-              <TextLink type="submit"  onPress={() => navigation.navigate("ForgetPassword")}>
-                <TextLinkContent>Forget your password?</TextLinkContent>
-              </TextLink>
-            </StyledFromArea>
-          )}
-        </Formik>
-      </InnerContainer>
-    </StyledContainer>
-  );
-};
-
-export const BackgroundImage = ({ children }) => {
-  return (
-    <View>
-      <ImageBackground
-        source={require("./../Assets/images/leaves.jpg")}
-        style={{ height: "100%" }}
-      />
-      <View style={{ position: "absolute" }}>{children}</View>
-    </View>
+                <TextLink
+                  type="submit"
+                  onPress={() => navigation.navigate("ForgetPassword")}
+                >
+                  <TextLinkContent>Forget your password?</TextLinkContent>
+                </TextLink>
+              </StyledFromArea>
+            )}
+          </Formik>
+        </InnerContainer>
+      </StyledContainer>
+    </ScrollView>
   );
 };
 
@@ -198,6 +195,7 @@ export const StyledContainer = styled.View`
   padding: 25px;
   padding-top: ${statusBarHeight}px;
   background-color: ${Colors.white};
+  width: 100%;
 `;
 
 export const InnerContainer = styled.View`
@@ -207,15 +205,15 @@ export const InnerContainer = styled.View`
 `;
 
 export const LoginLogo = styled.Image`
-  width: 250px;
-  height: 250px;
+  width: 200px;
+  height: 200px;
 `;
 
 export const LoginPageTitle = styled.Text`
   font-size: 30px;
   text-align: center;
   font-weight: bold;
-  padding: 10px;
+  padding: 10px 10px 40px 10px;
   color: ${Colors.brown65};
 `;
 
@@ -235,7 +233,7 @@ export const StyledFromArea = styled.View`
 export const Line = styled.View`
   width: 100%;
   height: 1px;
-  margin-vertical: 1px;
+  margin-vertical: 20px;
   background-color: ${Colors.black};
 `;
 
@@ -250,7 +248,9 @@ export const TextLink = styled.TouchableOpacity`
   justify-content: center;
   flex-direction: row;
   align-items: center;
+  margin-left: 70px;
   padding: 10px;
+  width: 60%;
 `;
 
 export const TextLinkContent = styled.Text`
@@ -258,6 +258,8 @@ export const TextLinkContent = styled.Text`
   align-items: center;
   color: ${"blue"};
   font-size: 14px;
+  width: 100%;
+  text-align: center;
 `;
 
 export default Login;

@@ -46,7 +46,7 @@ const BottomTabNavigation = () => {
         right: 0,
         left: 0,
         elevation: 0,
-        height: 60,
+        height: 65,
       }}
     >
       {tabArr.map((res, index) => {
@@ -60,7 +60,7 @@ const BottomTabNavigation = () => {
                 <MaterialCommunityIcons
                   name={res.icon}
                   color={color}
-                  size={24}
+                  size={28}
                   style={{top: -10}}
                 />
               ),
@@ -75,13 +75,13 @@ const BottomTabNavigation = () => {
 
 const styles = StyleSheet.create({
   tabBarLabel: {
-    fontSize: 13,
+    fontSize: 12,
     position: 'relative',
     padding: 0,
     bottom: 15,
     color: Colors.black,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });
 
