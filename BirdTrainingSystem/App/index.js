@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabNavigation from "../navigation/BottomTabNavigation";
 import Login from "../screens/Login";
 import  ForgetPassword  from "../screens/ForgetPassword";
+import { BirdDetails } from "../screens";
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +51,16 @@ export default App = () => {
         <Stack.Screen
           name="ForgetPassword"
           component={ForgetPassword}
+          options={{ 
+            headerShown: true ,
+            gestureEnabled: true,
+            gestureDirection: "column",
+            CardStyleInterpolation: "linear"
+          }}
+        />
+        <Stack.Screen
+          name="BirdDetails"
+          component={BirdDetails}
           options={{ 
             headerShown: true ,
             gestureEnabled: true,

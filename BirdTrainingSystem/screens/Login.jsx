@@ -20,10 +20,14 @@ const statusBarHeight = Constants.statusBarHeight;
 const Stack = createNativeStackNavigator();
 
 const Login = ({ navigation }) => {
+  const [text , onChangeText] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
+  
+  const  handleChangeText = () => useState(true);
+  const handleBlurText =() => useState(false);
 
   return (
-    <ScrollView keyboardShouldPersistTaps={"handled"}>
+    <ScrollView style={{height: '100%', backgroundColor:Colors.white}} keyboardShouldPersistTaps={"handled"}>
       <StyledContainer>
         <StatusBar style="dark" />
         <InnerContainer>
@@ -147,13 +151,13 @@ export const StyledTextInput = styled.TextInput`
   font-size: 15px;
   height: 50px;
   margin-vertical: 3px;
-  margin-bottom: 10px;
-  opacity: 0.5;
+  margin-bottom: 20px;
   border-width: 1px;
+  border-color: ${Colors.offWhite};
 `;
 
 export const LabeledInput = styled.Text`
-  color: ${Colors.darkLight};
+  color: ${Colors.black};
   font-size: 13px;
   text-align: left;
 `;
@@ -175,7 +179,7 @@ export const RightIcons = styled.TouchableOpacity`
 ///button
 export const ButtonLogin = styled.TouchableOpacity`
   padding: 15px;
-  background-color: ${Colors.brownC8};
+  background-color: ${Colors.yellow};
   justify-content: center;
   align-items: center;
   border-radius: 10px;
@@ -193,14 +197,14 @@ export const ButtonText = styled.Text`
 export const StyledContainer = styled.View`
   flex: 1;
   padding: 25px;
-  padding-top: ${statusBarHeight}px;
-  background-color: ${Colors.white};
   width: 100%;
+  height: 100%;
 `;
 
 export const InnerContainer = styled.View`
   flex: 1;
   width: 100%;
+  height: 100%;
   align-items: center;
 `;
 
