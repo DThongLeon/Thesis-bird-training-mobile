@@ -1,2 +1,6 @@
 import {Colors} from './theme'
-export {Colors};
+import { Category } from './categories';
+import { Course } from './viewListCourse';
+
+
+export {Colors, Category, Course};

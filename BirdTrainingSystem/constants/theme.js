@@ -9,6 +9,7 @@ const Colors =  {
     brown76: '#765827',
     brown65: '#65451F',
 
+    yellow:"#F5E365",
 
     white: '#FFFFFF',
     lightWhite: '#FAFAFC',
