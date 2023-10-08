@@ -9,28 +9,32 @@ import {
   ScrollView,
   FlatList,
   Pressable,
+  SafeAreaView,
 } from "react-native";
-import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import React, { useRef } from "react";
+import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { Colors } from "../constants/theme";
 
 import { Category } from "../constants/categories";
 import { Course } from "../constants/viewListCourse";
 import { useNavigation } from "@react-navigation/native";
 import BirdDetails from "./BirdDetails";
+import { SliderBox } from "react-native-image-slider-box";
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
 const Home = () => {
+  const birdArr = ["bird1", "bird2", "bird3", "bird4", "bird5"];
+
   return (
     <SafeAreaView>
       <ScrollView
-        showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps={"handled"}
+        keyboardShouldPersistTaps={"handle"}
         style={style.appBarWrapper}
       >
+        {/* avatar and action sheet */}
         <View style={style.appBar}>
-          <View
+          <TouchableOpacity
             style={{
               flexDirection: "row",
               justifyContent: "center",
@@ -39,17 +43,17 @@ const Home = () => {
           >
             <Image
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 40,
+                height: wp(12),
+                width: wp(12),
+                borderRadius: wp(12),
                 backgroundColor: Colors.black,
               }}
             />
             <Text style={style.userStyle}>Bird</Text>
-          </View>
+          </TouchableOpacity>
 
-          <View>
-            <Ionicons size={25} name="location"></Ionicons>
+          <View style={{ marginRight: 10 }}>
+            <Ionicons size={25} name="notifications"></Ionicons>
           </View>
         </View>
 
@@ -61,12 +65,12 @@ const Home = () => {
           >
             <Feather
               name="search"
-              size={24}
+              size={22}
               style={{
                 marginHorizontal: 10,
-                color: Colors.grey,
+                color: Colors.black,
               }}
-            ></Feather>
+            />
           </TouchableOpacity>
           <View
             style={{
@@ -78,26 +82,31 @@ const Home = () => {
           >
             <TextInput
               style={{
+                flex: 1,
                 width: "100%",
                 height: "100%",
                 paddingHorizontal: 5,
+                lineHeight: 24,
+                fontSize: 16,
               }}
               // value= ""
               onPressIn={() => {}}
               placeholder="What courses you're looking for..."
+              placeholderTextColor={"gray"}
             />
           </View>
         </View>
 
         {/* Filter section */}
-        <View>
+        <View style={{ marginTop: 20 }}>
           <Text style={style.textStyle}>Categories</Text>
-          <CategoryFilter></CategoryFilter>
+          <CategoryFilter />
         </View>
 
-        <View>
-          <Text style={style.textStyle}>Popular Course</Text>
-          <CourseBird></CourseBird>
+        {/*Show all course show  */}
+        <View style={{ flex: 1 }}>
+          <Text style={style.textStyle}>Course</Text>
+          <CourseBird/>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -107,30 +116,35 @@ const Home = () => {
 export const CategoryFilter = () => {
   return (
     <View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
         {Category.map((value, index) => {
           return (
             <TouchableOpacity
+              key={index}
               style={{
+                display: 'flex',
+                alignItems: "center",
+                marginLeft: 16,
                 marginVertical: 20,
-                backgroundColor: index === 0 ? Colors.red : Colors.white,
-                marginRight: 30,
-                paddingHorizontal: 15,
-                paddingVertical: 12,
-                borderRadius: 10,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 5,
-                },
-                shadowOpacity: 0.32,
-                shadowRadius: 5.46,
-                elevation: 15,
               }}
             >
+              <Image
+                source={value.image}
+                style={{
+                  borderRadius: 24,
+                  width: wp(26),
+                  height: wp(24),
+                }}
+              />
               <Text
                 style={{
-                  color: index === 0 ? Colors.white : Colors.black,
+                  color: '#404040',
+                  fontWeight: 500,
+                  fontSize: wp(3),
+                  marginTop: 8
                 }}
               >
                 {value.name}
@@ -143,92 +157,110 @@ export const CategoryFilter = () => {
   );
 };
 
-export const CourseBird = () => {
-  const navigation = useNavigation();
+export const Carousel = () => {
+  const arr = [
+    require("./../Assets/images/bird.jpg"),
+    require("./../Assets/images/leaves.jpg"),
+  ];
   return (
-    <View>
-      <ScrollView alwaysBounceVertical showsVerticalScrollIndicator={false}>
-        {Course.map((val) => {
-          return (
-            <Pressable
-              onPress={ () => {
-                navigation.navigate("BirdDetails" , {
-                  screen: "BirdDetails",
-                })
-              }}
-              style={{
-                marginVertical: 20,
-                backgroundColor: Colors.white,
-                paddingHorizontal: 15,
-                paddingVertical: 12,
-                borderRadius: 10,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 5,
-                },
-                shadowOpacity: 0.32,
-                shadowRadius: 5.46,
-                elevation: 15,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Image
-                
-                source={val.image}
-                style={{
-                  height: 200,
-                  resizeMode:"center",
-                }}
-              />
-              <Text
-                style={{
-                  color: Colors.black,
-                }}
-              >
-                {val.name}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+    <View style={{ flex: 1, alignItems: "center",marginHorizontal: 15, marginTop: 20 }}>
+      <SliderBox
+        images={arr}
+        dotColor={Colors.black}
+        inactiveDotColor={Colors.grey}
+        ImageComponentStyle={{ borderRadius: 20, width: "80%", marginTop: 10 }}
+        autoplay
+        circleLoop
+      />
     </View>
   );
 };
+
+export const CourseBird = () => {
+  const navigation = useNavigation();
+  return (
+    <View
+      style={{
+        flex: 1,
+        marginHorizontal: 16,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        paddingBottom: 30
+      }}
+    >
+      {Course.map((val, index) => {
+        return (
+          <TouchableOpacity
+            key={index}
+            style={{
+              width: wp(44),
+              height: wp(65),
+              display: "flex",
+              justifyContent: "flex-end",
+              position: "relative",
+              paddingHorizontal: 16,
+              paddingVertical: 24,
+              marginTop: 10,
+              marginBottom: 10,
+            }}
+          >
+            <Image
+              source={val.image}
+              style={{
+                width: wp(44),
+                height: wp(65),
+                position: "absolute",
+                borderRadius: 40,
+              }}
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
+
+
 export default Home;
 
 const style = StyleSheet.create({
   textStyle: {
-    fontSize: 25,
-    // fontFamily: "Opens-Sans",
-    fontWeight: "500",
+    marginHorizontal: 15,
+    fontSize: wp(6),
+    fontWeight: "600",
+    paddingLeft: 5,
+    color: '#404040'
   },
+
   appBarWrapper: {
-    marginHorizontal: 22,
+    marginVertical: 20,
   },
+
   userStyle: {
-    fontSize: 20,
-    // fontFamily: "Opens-Sans",
-    fontWeight: "500",
+    fontSize: wp(6),
+    fontWeight: "600",
     paddingLeft: 10,
+    color: '#404040'
   },
+
   appBar: {
+    marginHorizontal: 15,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
 
   searchContainer: {
+    marginTop: 20,
+    marginHorizontal: 15,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: 10,
-    marginVertical: 20,
     paddingHorizontal: 16,
     height: 50,
-
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -236,6 +268,5 @@ const style = StyleSheet.create({
     },
     shadowOpacity: 0.32,
     shadowRadius: 5.46,
-    elevation: 15,
   },
 });

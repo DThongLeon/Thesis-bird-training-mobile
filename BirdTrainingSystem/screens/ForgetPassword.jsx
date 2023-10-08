@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ImageBackground,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import styled from "styled-components";
@@ -21,13 +22,12 @@ const ForgetPassword = () => {
   const [hidePassword, setHidePassword] = useState(true);
 
   return (
+    <ScrollView style={{height: '100%', backgroundColor: Colors.white}} keyboardShouldPersistTaps={"handled"}>
     <StyledContainer>
       <StatusBar style="dark" />
-      {/* <BackgroundImage><Text>Start Coding</Text></BackgroundImage> */}
       <InnerContainer>
-        <LoginPageTitle>Bird-Training System</LoginPageTitle>
-        <SubTitle>Account Login</SubTitle>
-
+        <LoginPageTitle>Training Academy</LoginPageTitle>
+        
         <Formik
           initialValues={{ email: "", password: "", confirmPassword: "" }}
           onSubmit={(values) => {
@@ -73,13 +73,14 @@ const ForgetPassword = () => {
               ></MyTextInput>
 
               <ButtonLogin onPress={handleSubmit}>
-                <ButtonText>Login</ButtonText>
+                <ButtonText>Enter</ButtonText>
               </ButtonLogin>
             </StyledFromArea>
           )}
         </Formik>
       </InnerContainer>
     </StyledContainer>
+    </ScrollView>
   );
 };
 
@@ -135,13 +136,13 @@ export const StyledTextInput = styled.TextInput`
   font-size: 15px;
   height: 50px;
   margin-vertical: 3px;
-  margin-bottom: 10px;
-  opacity: 0.5;
+  margin-bottom: 20px;
   border-width: 1px;
+  border-color: ${Colors.offWhite};
 `;
 
 export const LabeledInput = styled.Text`
-  color: ${Colors.darkLight};
+  color: ${Colors.black};
   font-size: 13px;
   text-align: left;
 `;
@@ -163,12 +164,12 @@ export const RightIcons = styled.TouchableOpacity`
 ///button
 export const ButtonLogin = styled.TouchableOpacity`
   padding: 15px;
-  background-color: ${Colors.brownC8};
+  background-color: ${Colors.yellow};
   justify-content: center;
   align-items: center;
   border-radius: 10px;
   height: 50px;
-  margin-vertical: 50px;
+  margin-vertical: 30px;
 `;
 
 export const ButtonText = styled.Text`
@@ -181,26 +182,27 @@ export const ButtonText = styled.Text`
 export const StyledContainer = styled.View`
   flex: 1;
   padding: 25px;
-  padding-top: ${statusBarHeight}px;
-  background-color: ${Colors.white};
+  width: 100%;
+  height: 100%;
 `;
 
 export const InnerContainer = styled.View`
   flex: 1;
   width: 100%;
+  height: 100%;
   align-items: center;
 `;
 
 export const LoginLogo = styled.Image`
-  width: 250px;
-  height: 250px;
+  width: 200px;
+  height: 200px;
 `;
 
 export const LoginPageTitle = styled.Text`
   font-size: 30px;
   text-align: center;
   font-weight: bold;
-  padding: 10px;
+  padding: 10px 10px 40px 10px;
   color: ${Colors.brown65};
 `;
 
@@ -219,8 +221,8 @@ export const StyledFromArea = styled.View`
 
 export const Line = styled.View`
   width: 100%;
-  height: 1px;
-  margin-vertical: 1px;
+  height: 0.5px;
+  margin-vertical: 20px;
   background-color: ${Colors.black};
 `;
 
@@ -235,14 +237,18 @@ export const TextLink = styled.TouchableOpacity`
   justify-content: center;
   flex-direction: row;
   align-items: center;
+  margin-left: 70px;
   padding: 10px;
+  width: 60%;
 `;
 
 export const TextLinkContent = styled.Text`
   justify-content: center;
   align-items: center;
   color: ${"blue"};
-  font-size: 14px;
+  font-size: 15px;
+  width: 100%;
+  letter-spacing: 0.3px;
 `;
 
 export default ForgetPassword;

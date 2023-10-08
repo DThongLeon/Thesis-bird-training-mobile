@@ -35,7 +35,7 @@ const Login = ({ navigation }) => {
             resizeMode="cover"
             source={require("./../Assets/images/bird.jpg")}
           ></LoginLogo>
-          <LoginPageTitle>Bird-Training System</LoginPageTitle>
+          <LoginPageTitle>Training Academy</LoginPageTitle>
           <Formik
             initialValues={{ email: "", password: "" }}
             // validate={values => {
@@ -236,7 +236,7 @@ export const StyledFromArea = styled.View`
 
 export const Line = styled.View`
   width: 100%;
-  height: 1px;
+  height: 0.5px;
   margin-vertical: 20px;
   background-color: ${Colors.black};
 `;
@@ -261,9 +261,9 @@ export const TextLinkContent = styled.Text`
   justify-content: center;
   align-items: center;
   color: ${"blue"};
-  font-size: 14px;
+  font-size: 15px;
   width: 100%;
-  text-align: center;
+  letter-spacing: 0.3px;
 `;
 
 export default Login;

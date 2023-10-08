@@ -42,7 +42,7 @@ const BottomTabNavigation = () => {
       barStyle={{
         backgroundColor: Colors.white,
         position: "absolute",
-        bottom: -10,
+        bottom: -12,
         right: 0,
         left: 0,
         elevation: 0,
