@@ -4,6 +4,7 @@ import Profile from "./Profile";
 import Login from "./Login";
 import ForgetPassword from "./ForgetPassword";
 import BirdDetails from "./BirdDetails";
+import Welcome from "./Welcome";
 
 export {
     Home,
@@ -11,5 +12,6 @@ export {
     Search,
     Login,
     ForgetPassword,
-    BirdDetails
+    BirdDetails,
+    Welcome
 }

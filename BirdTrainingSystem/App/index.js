@@ -6,13 +6,11 @@ import { useCallback } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabNavigation from "../navigation/BottomTabNavigation";
-import Login from "../screens/Login";
-import  ForgetPassword  from "../screens/ForgetPassword";
-import { BirdDetails } from "../screens";
+import { BirdDetails, ForgetPassword,Welcome, Login } from "../screens";
 
-const Stack = createNativeStackNavigator();
 
 export default App = () => {
+  const Stack = createNativeStackNavigator();
   // const { fontLoaded } = useFonts({
   //   regular: require("../Assets/fonts/OpenSans-Medium.ttf"),
   //   light: require("../Assets/fonts/OpenSans-Light.ttf"),
@@ -26,11 +24,20 @@ export default App = () => {
   // if (!fontLoaded) return null;
 
   return (
-    <NavigationContainer independent={true}>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Welcome">
         <Stack.Screen
           name="Bottom Navigation"
           component={BottomTabNavigation}
+          options={{ 
+            headerShown: false ,
+            gestureEnabled: true,
+            gestureDirection: "column",
+            CardStyleInterpolation: "linear"
+          }}
+        />
+        <Stack.Screen
+          name="Welcome"
+          component={Welcome}
           options={{ 
             headerShown: false ,
             gestureEnabled: true,
@@ -62,14 +69,13 @@ export default App = () => {
           name="BirdDetails"
           component={BirdDetails}
           options={{ 
-            headerShown: true ,
+            headerShown: false ,
             gestureEnabled: true,
             gestureDirection: "column",
             CardStyleInterpolation: "linear"
           }}
         />
       </Stack.Navigator>
-    </NavigationContainer>
   );
 };
 

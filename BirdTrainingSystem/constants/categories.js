@@ -1,28 +1,29 @@
 const Category = [
     {
         id: 1,
-        name: 'Flying'
+        name: 'Flying',
+        image: require("./../Assets/images/bird.jpg"),
     },
     {
         id:2,
-        name: 'Landing'
+        name: 'Landing',
+        image: require("./../Assets/images/bird.jpg"),
     },
     {
         id:4,
-        name: 'Singing'
+        name: 'Singing',
+        image: require("./../Assets/images/bird.jpg"),
     },
     {
         id:5,
-        name: 'Singing'
+        name: 'Dancing',
+        image: require("./../Assets/images/bird.jpg"),
     },
     {
         id:6,
-        name: 'Singing'
+        name: 'Crying',
+        image: require("./../Assets/images/bird.jpg"),
     },
-    {
-        id:7,
-        name: 'Singing'
-    }
 ]
 
 export {Category}
