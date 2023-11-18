@@ -14,12 +14,13 @@ import Constants from "expo-constants";
 import { Colors } from "../constants/theme";
 import { Formik } from "formik";
 import { Ionicons } from "@expo/vector-icons";
-import NavLink from "../Components/navLink/NavLink";
 
 const statusBarHeight = Constants.statusBarHeight;
 
 const ForgetPassword = () => {
   const [hidePassword, setHidePassword] = useState(true);
+
+  const [hideConfirmPassword, setHideConfirmPassword] = useState(true);
 
   return (
     <ScrollView style={{height: '100%', backgroundColor: Colors.white}} keyboardShouldPersistTaps={"handled"}>
@@ -31,7 +32,6 @@ const ForgetPassword = () => {
         <Formik
           initialValues={{ email: "", password: "", confirmPassword: "" }}
           onSubmit={(values) => {
-            console.log(values);
           }}
         >
           {({ handleChange, handleBlur, handleSubmit, values }) => (
@@ -59,18 +59,18 @@ const ForgetPassword = () => {
                 setHidePassword={setHidePassword}
               ></MyTextInput>
 
-              <MyTextInput
+              <MyTextHidePassword
                 label={"Confirm Password"}
                 icon={"lock-closed"}
                 placeholder={"**********"}
-                onChangeText={handleChange("confirm password")}
+                onChangeText={handleChange("confirmPassword")}
                 onBlur={handleBlur("confirmPassword")}
                 value={values.confirmPassword}
-                secureTextEntry={hidePassword}
+                secureTextEntry={hideConfirmPassword}
                 isPassword={true}
-                hidePassword={hidePassword}
-                setHidePassword={setHidePassword}
-              ></MyTextInput>
+                hideConfirmPassword={hideConfirmPassword}
+                setHideConfirmPassword={setHideConfirmPassword}
+              ></MyTextHidePassword>
 
               <ButtonLogin onPress={handleSubmit}>
                 <ButtonText>Enter</ButtonText>
@@ -128,6 +128,37 @@ export const MyTextInput = ({
   );
 };
 
+export const MyTextHidePassword = ({
+  label,
+  icon,
+  isPassword,
+  hideConfirmPassword,
+  setHideConfirmPassword,
+  ...props
+}) => {
+  return (
+    <View style={{ marginTop: 10 }}>
+      <LeftIcons>
+        <Ionicons name={icon} size={26} color={Colors.darkLight} />
+      </LeftIcons>
+      <LabeledInput>{label}</LabeledInput>
+      <StyledTextInput {...props} />
+      {isPassword && (
+        <RightIcons
+          onPress={() => {
+            setHideConfirmPassword(!hideConfirmPassword);
+          }}
+        >
+          <Ionicons
+            name={hideConfirmPassword ? "md-eye-off" : "md-eye"}
+            size={26}
+            color={Colors.darkLight}
+          />
+        </RightIcons>
+      )}
+    </View>
+  );
+};
 //input field
 export const StyledTextInput = styled.TextInput`
   background-color: ${Colors.offWhite};

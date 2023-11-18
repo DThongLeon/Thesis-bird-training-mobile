@@ -6,137 +6,601 @@ import {
   ImageBackground,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
+  RefreshControl,
+  FlatList,
 } from "react-native";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Colors } from "../constants/theme";
 import {
   FontAwesome5,
   Ionicons,
   MaterialCommunityIcons,
+  Entypo,
+  AntDesign,
+  Octicons,
+  EvilIcons,
+  MaterialIcons,
+  Feather,
 } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInRight,
+  FadeInUp,
+  FadeOutDown,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+// import { Marquee } from "@animatereactnative/marquee";
+import axios from "axios";
+import {
+  StackActions,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 
-const BirdDetails = ({ navigation, route }) => {
-  const receiveValue = route.params.value;
+import MarqueeView from "react-native-marquee-view";
+import Loader from "../Components/Loader";
+
+const BirdDetails = ({ route }) => {
+  // loading
+  const [loading, setLoading] = useState(false);
+
+  const navigation = useNavigation();
+  const item = route.params.getId;
+
+  const [customerBird, setCustomerBird] = useState(route.params.dataCustomer);
+  const [trainingCourse, setTrainingCourse] = useState({});
+
+
+  // get session slot
+  const [carouselData, setCarouselData] = useState([]);
+
+
+  async function getTrainingId() {
+    try {
+      setLoading(true);
+      const res = await axios(
+        "http://13.214.85.41/api/trainingcourse-customer/trainingcourse-id",
+        {
+          method: "get",
+          headers: {
+            Accept: "application/json",
+          },
+          params: { trainingCourseId: route.params.getTrainingCourseId },
+        }
+      ).finally(() => {
+        setLoading(false);
+      });
+      if (res) {
+        setTrainingCourse(res.data);
+        setCarouselData(res.data.birdSkills)
+        const getRegisterCustomer = JSON.stringify(res.data.registeredCustomer);
+        const getCustomerId = JSON.stringify(
+          customerBird.map((val) => val.customerId)
+        );
+        if (getRegisterCustomer === getCustomerId) {
+          setIsRegister(true);
+        }
+        
+      }
+    } catch (err) {
+      alert(err);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getTrainingId();
+    }, [])
+  );
+
+  const [isRegister, setIsRegister] = useState(false);
+
+  const handleRegister = async () => {
+    const userData = {
+      birdId: customerBird[0].id,
+      trainingCourseId: trainingCourse.id,
+      customerId: customerBird[0].customerId,
+      totalPrice: trainingCourse.totalPrice,
+    };
+    try {
+      const res = await axios.post(
+        "http://13.214.85.41/api/trainingcourse-customer/register-trainingcourse",
+        userData
+      );
+      if (res.status === 200) {
+        setIsRegister((value) => !value);
+      }
+    } catch (err) {
+      alert(err);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsRegister();
+    }, [])
+  );
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const RefreshCycle = () => {
+    setLoading(true);
+    setRefreshing(true);
+    setTimeout(() => {
+      setLoading(false);
+      setRefreshing(false);
+      getTrainingId();
+    }, 1000);
+  };
+
   return (
-    <ScrollView
-      showsHorizontalScrollIndicator={false}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps={"handled"}
+    <View
+      style={{
+        backgroundColor: Colors.offWhite,
+        flex: 1,
+      }}
     >
-      <SafeAreaView style={{ backgroundColor: Colors.brown76, flex: 1 }}>
+      <Image
+        source={{ uri: trainingCourse.picture }}
+        style={{
+          resizeMode: "stretch",
+          width: wp(100),
+          height: hp(38),
+        }}
+      />
+      {/* back button */}
+      <View
+        entering={FadeIn.delay(200).duration(1000)}
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+          position: "absolute",
+        }}
+      >
         <TouchableOpacity
+          style={{
+            padding: 2,
+            marginVertical: 30,
+            borderRadius: 9999,
+            marginLeft: 16,
+            backgroundColor: Colors.white,
+          }}
           onPress={() => {
             navigation.goBack();
           }}
         >
-          <View style={style.appBar}>
+          <Ionicons
+            name="chevron-back-outline"
+            size={wp(7)}
+            strokeWidth={10}
+            color="black"
+          />
+        </TouchableOpacity>
+      </View>
+      {/* title desctip and register button */}
+      <View
+        entering={FadeInUp.delay((index = 100)).duration(600)}
+        style={{
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          paddingLeft: 20,
+          paddingRight: 20,
+          flex: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          backgroundColor: "#fafafa",
+          paddingTop: 25,
+          marginTop: -35,
+        }}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={RefreshCycle} />
+          }
+        >
+          {/* price and title */}
+          <View
+            style={{
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: wp(7),
+                fontWeight: 700,
+                color: "#404040",
+                fontSize: wp(8),
+              }}
+            >
+              {trainingCourse.title}
+            </Text>
+            <Text
+              style={{
+                marginTop: 10,
+                fontSize: wp(7),
+                fontWeight: 600,
+                color: Colors.brownEa,
+                fontSize: wp(6),
+              }}
+            >
+              Price: {trainingCourse.totalPrice} VND
+            </Text>
+          </View>
+
+          {/* description */}
+          <Text
+            style={{
+              fontSize: wp(5),
+              letterSpacing: 0.2,
+              marginTop: wp(6),
+              color: "#404040",
+              fontWeight: 800,
+            }}
+          >
+            About Course:
+          </Text>
+          <Text
+            style={{
+              fontSize: wp(3.5),
+              letterSpacing: 0.2,
+              marginTop: wp(2),
+              color: "#404040",
+              paddingHorizontal: 10,
+            }}
+          >
+            {trainingCourse.description}
+          </Text>
+
+          {/* duration and trainer */}
+          <Text
+            style={{
+              fontSize: wp(5),
+              letterSpacing: 0.2,
+              marginTop: wp(6),
+              color: "#404040",
+              fontWeight: 800,
+            }}
+          >
+            More about course
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginHorizontal: 10,
+            }}
+          >
             <View
               style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                paddingVertical: 20,
+              }}
+            >
+              <AntDesign name="clockcircle" size={wp(5)} color="skyblue" />
+              <View
+                style={{
+                  marginHorizontal: 10,
+                }}
+              >
+                <Text
+                  style={{ color: "#404040", fontWeight: 500, fontSize: wp(4) }}
+                >
+                  {trainingCourse.totalSlot} Slot
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 20,
+                marginHorizontal: 10,
+              }}
+            >
+              <MaterialCommunityIcons name="bird" size={wp(6)} />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#404040",
+                    fontWeight: 600,
+                    fontSize: wp(4),
+                    marginLeft: 10,
+                  }}
+                >
+                  Type:
+                </Text>
+                <Text
+                  style={{
+                    color: "#404040",
+                    fontWeight: 400,
+                    fontSize: wp(4),
+                    marginLeft: 10,
+                  }}
+                >
+                  {trainingCourse.birdSpeciesName}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Carousel slide show */}
+          <MarqueeView speed={0.1} loop={true} delay={0} autoPlay={true}>
+            <View
+              style={{
+                width: "100%",
+                marginRight: wp(45),
+                marginHorizontal: 10,
+                paddingVertical: 5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+              }}
+            >
+              {carouselData.map((data, index) => {
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Image
+                      source={{ uri: data.picture }}
+                      style={{
+                        borderRadius: 25,
+                        width: wp(12),
+                        height: wp(12),
+                      }}
+                    />
+                    <Text
+                      style={{
+                        width: wp(20),
+                        fontSize: wp(3.5),
+                        letterSpacing: 0.2,
+                        marginTop: wp(2),
+                        color: "#404040",
+                        paddingHorizontal: 10,
+                        textAlign: "center",
+                      }}
+                    >
+                      {data.name}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </MarqueeView>
+
+          {/* details bird earn skill */}
+          <View
+            style={{
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: wp(5),
+                fontWeight: 600,
+                letterSpacing: 0.2,
+                marginTop: wp(6),
+                color: "#404040",
+              }}
+            >
+              Your bird will learn:
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 10,
+                width: "100%",
+              }}
+            >
+              <AntDesign name="checkcircle" size={24} color={"green"} />
+              <Text
+                style={{
+                  marginHorizontal: 10,
+                  marginLeft: 20,
+                  fontSize: wp(5),
+                  fontWeight: 600,
+                  color: "#404040",
+                  flexWrap: "wrap",
+                  width: "77%",
+                }}
+              >
+                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 10,
+                width: "100%",
+              }}
+            >
+              <AntDesign name="checkcircle" size={24} color={"green"} />
+              <Text
+                style={{
+                  marginHorizontal: 10,
+                  marginLeft: 20,
+                  fontSize: wp(5),
+                  fontWeight: 600,
+                  color: "#404040",
+                  flexWrap: "wrap",
+                  width: "77%",
+                }}
+              >
+                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
+              </Text>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 10,
+                width: "100%",
+              }}
+            >
+              <AntDesign name="checkcircle" size={24} color={"green"} />
+              <Text
+                style={{
+                  marginHorizontal: 10,
+                  marginLeft: 20,
+                  fontSize: wp(5),
+                  fontWeight: 600,
+                  color: "#404040",
+                  flexWrap: "wrap",
+                  width: "77%",
+                }}
+              >
+                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
+              </Text>
+            </View>
+          </View>
+
+          {/* certificate */}
+          <View
+            style={{
+              marginTop: 10,
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: wp(5),
+                fontWeight: 600,
+                letterSpacing: 0.2,
+                marginTop: 10,
+                color: "#404040",
+              }}
+            >
+              Earn your certificate:
+            </Text>
+
+            <View
+              style={{
+                borderColor: Colors.grey,
+                width: "auto",
+                height: hp(13),
+                borderRadius: 10,
+                borderWidth: 1,
+                marginVertical: 10,
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <ImageBackground
+              <Image
+                source={require("./../Assets/images/certificate.jpg")}
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 30,
-                  borderWidth: 1,
-                  borderColor: Colors.black,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  height: wp(15),
+                  width: wp(15),
                   marginHorizontal: 20,
-                  marginVertical: 15,
+                }}
+              />
+              <Text
+                style={{
+                  flex: 1,
+                  flexWrap: "wrap",
+                  fontSize: wp(3.5),
+                  letterSpacing: 0.2,
+                  color: "#404040",
                 }}
               >
-                <Ionicons name="arrow-undo" size={22} />
-              </ImageBackground>
+                Earn Certificate when complete traintrainingtraininging
+              </Text>
             </View>
           </View>
-        </TouchableOpacity>
-        <View
-          style={{
-            backgroundColor: Colors.white,
-            alignItems: "center",
-            flex: 1,
-            marginTop: 140,
-            borderTopLeftRadius: 60,
-            borderTopRightRadius: 60,
-          }}
-        >
-          <View
-            style={{
-              top: -100,
-              position: "absolute",
-              width: 200,
-              height: 200,
-            }}
-          >
-            <Image
-              style={{
-                width: "100%",
-                height: "100%",
-                resizeMode: "cover",
-                borderRadius: 50,
-              }}
-              source={receiveValue.image}
-            />
-          </View>
-
-          <Text style={{ marginTop: 150, fontSize: 30, fontWeight: "bold" }}>
-            {receiveValue.name}
-          </Text>
-
-          <Text style={{ marginVertical: 15, fontSize: 20 }}>
-            {receiveValue.details}
-          </Text>
 
           <View
             style={{
-              flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
+              marginBottom: 20,
             }}
           >
-            <View
+            <Text
               style={{
-                backgroundColor: "orange",
-                padding: 15,
-                borderRadius: 12,
-                marginRight: 10,
+                fontSize: wp(6),
+                fontWeight: 600,
+                letterSpacing: 0.2,
+                marginTop: 10,
+                color: "#404040",
               }}
             >
-              <View style={{ flexDirection: "row" }}>
-                <FontAwesome5
-                  size={20}
-                  name="chalkboard-teacher"
-                ></FontAwesome5>
-                <Text
-                  style={{
-                    marginHorizontal: 8,
-                    fontSize: 15,
-                    fontWeight: "bold",
-                  }}
-                >
-                  Trainer
-                </Text>
-              </View>
-              <Text>{receiveValue.trainer}</Text>
-            </View>
+              Try it now !!
+            </Text>
           </View>
-          <ButtonLogin
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <ButtonText>Register</ButtonText>
-          </ButtonLogin>
+        </ScrollView>
+        {/* button register */}
+        <View
+          style={{
+            height: "15%",
+          }}
+        >
+          {isRegister ? (
+            <ButtonDisabled disabled>
+              <Feather name="check-circle" size={24} color="green" />
+              <Text
+                style={{
+                  margin: "auto",
+                  paddingLeft: wp(4),
+                  color: Colors.green,
+                  fontWeight: 700,
+                  fontSize: wp(6),
+                }}
+              >
+                Registered
+              </Text>
+            </ButtonDisabled>
+          ) : (
+            <ButtonLogin onPress={handleRegister}>
+              <Text
+                style={{ color: "#404040", fontWeight: 700, fontSize: wp(4.5) }}
+              >
+                Register
+              </Text>
+            </ButtonLogin>
+          )}
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </View>
+      {loading ? <Loader /> : null}
+    </View>
   );
 };
 
@@ -151,14 +615,25 @@ const style = StyleSheet.create({
 });
 
 export const ButtonLogin = styled.TouchableOpacity`
-  width: 80%;
-  padding: 15px;
+  width: 196px;
+  height: 50px;
   background-color: ${Colors.yellow};
+  margin: auto;
+  display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 10px;
+  border-radius: 999px;
+`;
+
+export const ButtonDisabled = styled.TouchableOpacity`
+  width: 196px;
   height: 50px;
-  margin-vertical: 100px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 999px;
+  flex-direction: row;
 `;
 
 export const ButtonText = styled.Text`
