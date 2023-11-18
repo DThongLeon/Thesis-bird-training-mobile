@@ -5,9 +5,32 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ]
     ],
     "name": "BirdTrainingSystem",
-    "slug": "BirdTrainingSystem"
+    "slug": "thesis-birdtraining",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "87c44b7f-4041-4d6f-b3f7-5b656464c7cf"
+      }
+    },
+    "owner": "thonghd2",
+    "android": {
+    "package": "com.example.mapsdemo",
+    "config": {
+      "googleMaps": {
+      "apiKey": "AIzaSyBjUrLfuYv0VjlcBd9AYqT-OqUoDnYe5iA"
+       }
+      }
+    }
   }
 }

@@ -10,263 +10,519 @@ import {
   FlatList,
   Pressable,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
-import React, { useRef } from "react";
-import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Feather,
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+  Entypo,
+} from "@expo/vector-icons";
 import { Colors } from "../constants/theme";
 
 import { Category } from "../constants/categories";
 import { Course } from "../constants/viewListCourse";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import BirdDetails from "./BirdDetails";
 import { SliderBox } from "react-native-image-slider-box";
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  FadeInDown,
+  FadeInRight,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+import { jwtDecode } from "jwt-decode";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { decode, encode } from "base-64";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import * as _ from "lodash";
+import Loader from "../Components/Loader";
 
-const Home = () => {
-  const birdArr = ["bird1", "bird2", "bird3", "bird4", "bird5"];
+if (!global.btoa) {
+  global.btoa = encode;
+}
+
+if (!global.atob) {
+  global.atob = decode;
+}
+
+const Home = ({ route }) => {
+  const navigation = useNavigation();
+  // loading
+  const [loading, setLoading] = useState(false);
+
+  const [payload, setPayload] = useState({});
+
+  // data customer bird
+  const [getDataDecode, setDataDecode] = useState({});
+  const [dataCustomerBird, setDataCustomerBird] = useState([]);
+
+  // async function getSelectDefault() {
+  //   setLoading(true);
+  //   const getToken = AsyncStorage.getItem("AcceptToken");
+  //   if (getToken) {
+  //     getToken.then((val) => {
+        
+  //     });
+  //   }
+  //   const result = await axios(
+  //     "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
+  //     {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //       },
+  //       params: { customerId: AsyncStorage.getItem("AcceptToken").then(val => {
+  //         JSON.stringify(val)
+  //       }) },
+  //     }
+  //   ).finally(() => {
+  //     setLoading(false);
+  //   });
+  //   if (result.status === 200) {
+  //     console.log(1);
+  //     console.log(result.data)
+  //   }
+  // }
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     getSelectDefault();
+  //   }, [])
+  // );
+
+  // get category data bird species
+  const [dataBirdSpecies, setDataBirdSpecies] = useState([]);
+
+  const [dataBase, setDataBase] = useState([]);
+
+  async function getCategoryFilter() {
+    try {
+      setLoading(true);
+      const res = await axios(
+        "http://13.214.85.41/api/trainingcourse-customer/birdskill",
+        {
+          method: "get",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      ).finally(() => {
+        setLoading(false);
+      });
+      if (res) {
+        setFilterCart(res.data);
+      }
+    } catch (err) {
+      alert(err);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getCategoryFilter();
+    }, [])
+  );
+
+  const getBirdPicture = dataCustomerBird.map((item) => item.picture);
+  const getBirdName = dataCustomerBird.map((item) => item.name);
+
+  // Refresh cycle
+  const [refreshing, setRefreshing] = useState(false);
+
+  const RefreshCycle = () => {
+    setRefreshing(true);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setRefreshing(false);
+      getCategoryFilter();
+      getSelectDefault();
+    });
+  };
+
+  // Search and filter
+  const [search, setSearch] = useState("");
+
+  const [colorSelect, setColorSelect] = useState(null);
+
+  const [filterCart, setFilterCart] = useState([]);
+
+  const onSearch = (text) => {
+    if (text == "") {
+      setSearch(text);
+      setDataBirdSpecies(dataBase);
+    } else {
+      let tempList = dataBase.filter((item) => {
+        const itemToSearch = item.title
+          ? item.title.trim().toLowerCase()
+          : "".trim().toLowerCase();
+        const itemBase = text.trim().toLowerCase();
+        return itemToSearch.indexOf(itemBase) > -1;
+      });
+      setDataBirdSpecies(tempList);
+      setSearch(text);
+    }
+  };
+
+  const onFilterSelect = (item) => {
+    if (item == "All") {
+      setDataBirdSpecies(dataBase);
+    } else {
+      let tempList = dataBase.filter((params) => {
+        return params.birdSkills.map((val) => val.name).indexOf(item) > -1;
+      });
+
+      setDataBirdSpecies(tempList);
+    }
+  };
 
   return (
-    <SafeAreaView>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps={"handle"}
-        style={style.appBarWrapper}
-      >
-        {/* avatar and action sheet */}
+    <>
+      <SafeAreaView>
+        {/* avatar and bird name sheet */}
         <View style={style.appBar}>
-          <TouchableOpacity
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <Image
-              style={{
-                height: wp(12),
-                width: wp(12),
-                borderRadius: wp(12),
-                backgroundColor: Colors.black,
-              }}
-            />
-            <Text style={style.userStyle}>Bird</Text>
-          </TouchableOpacity>
-
-          <View style={{ marginRight: 10 }}>
-            <Ionicons size={25} name="notifications"></Ionicons>
-          </View>
-        </View>
-
-        {/* Search Bar */}
-        <View style={style.searchContainer}>
-          <TouchableOpacity
-            onPress={Keyboard.dismiss}
-            style={{ flexDirection: "row" }}
-          >
-            <Feather
-              name="search"
-              size={22}
-              style={{
-                marginHorizontal: 10,
-                color: Colors.black,
-              }}
-            />
-          </TouchableOpacity>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: Colors.white,
-              marginRight: 10,
-              borderRadius: 12,
-            }}
-          >
-            <TextInput
-              style={{
-                flex: 1,
-                width: "100%",
-                height: "100%",
-                paddingHorizontal: 5,
-                lineHeight: 24,
-                fontSize: 16,
-              }}
-              // value= ""
-              onPressIn={() => {}}
-              placeholder="What courses you're looking for..."
-              placeholderTextColor={"gray"}
-            />
-          </View>
-        </View>
-
-        {/* Filter section */}
-        <View style={{ marginTop: 20 }}>
-          <Text style={style.textStyle}>Categories</Text>
-          <CategoryFilter />
-        </View>
-
-        {/*Show all course show  */}
-        <View style={{ flex: 1 }}>
-          <Text style={style.textStyle}>Course</Text>
-          <CourseBird/>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-export const CategoryFilter = () => {
-  return (
-    <View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        {Category.map((value, index) => {
-          return (
-            <TouchableOpacity
-              key={index}
-              style={{
-                display: 'flex',
-                alignItems: "center",
-                marginLeft: 16,
-                marginVertical: 20,
-              }}
-            >
+            {/* Bird picture */}
+            {getBirdPicture == null ? (
               <Image
-                source={value.image}
+                source={require("./../Assets/images/beach.png")}
                 style={{
-                  borderRadius: 24,
-                  width: wp(26),
-                  height: wp(24),
+                  height: wp(12),
+                  width: wp(12),
+                  borderRadius: wp(12),
+                  borderColor: Colors.primary,
+                  borderWidth: 1,
                 }}
               />
-              <Text
+            ) : (
+              <Image
+                source={{ uri: getBirdPicture[0] }}
                 style={{
-                  color: '#404040',
-                  fontWeight: 500,
-                  fontSize: wp(3),
-                  marginTop: 8
+                  height: wp(12),
+                  width: wp(12),
+                  borderRadius: wp(12),
+                  borderColor: Colors.primary,
+                  borderWidth: 1,
                 }}
-              >
-                {value.name}
-              </Text>
+              />
+            )}
+            {/* bird name */}
+            {getBirdName && (
+              <Text style={style.userStyle}>{getBirdName[0]}</Text>
+            )}
+          </View>
+          <View style={{ marginRight: 10 }}>
+            <TouchableOpacity onPress={() => {}}>
+              <Ionicons size={25} name="notifications"></Ionicons>
             </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
-  );
-};
+          </View>
+        </View>
+        {/* content filter and training program */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps={"handled"}
+          style={style.appBarWrapper}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={RefreshCycle} />
+          }
+        >
+          {/* Search Bar */}
+          <View style={style.searchContainer}>
+            <TouchableOpacity style={{ flexDirection: "row" }}>
+              <Feather
+                name="search"
+                size={24}
+                style={{
+                  marginHorizontal: 10,
+                  color: Colors.black,
+                }}
+              />
+            </TouchableOpacity>
 
-export const Carousel = () => {
-  const arr = [
-    require("./../Assets/images/bird.jpg"),
-    require("./../Assets/images/leaves.jpg"),
-  ];
-  return (
-    <View style={{ flex: 1, alignItems: "center",marginHorizontal: 15, marginTop: 20 }}>
-      <SliderBox
-        images={arr}
-        dotColor={Colors.black}
-        inactiveDotColor={Colors.grey}
-        ImageComponentStyle={{ borderRadius: 20, width: "80%", marginTop: 10 }}
-        autoplay
-        circleLoop
-      />
-    </View>
-  );
-};
-
-export const CourseBird = () => {
-  const navigation = useNavigation();
-  return (
-    <View
-      style={{
-        flex: 1,
-        marginHorizontal: 16,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        paddingBottom: 30
-      }}
-    >
-      {Course.map((val, index) => {
-        return (
-          <TouchableOpacity
-            key={index}
-            style={{
-              width: wp(44),
-              height: wp(65),
-              display: "flex",
-              justifyContent: "flex-end",
-              position: "relative",
-              paddingHorizontal: 16,
-              paddingVertical: 24,
-              marginTop: 10,
-              marginBottom: 10,
-            }}
-          >
-            <Image
-              source={val.image}
+            <View
               style={{
-                width: wp(44),
-                height: wp(65),
-                position: "absolute",
-                borderRadius: 40,
+                flex: 1,
+                backgroundColor: Colors.white,
+                marginRight: 10,
+                borderRadius: 12,
               }}
-            />
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+            >
+              <TextInput
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  paddingHorizontal: 5,
+                  lineHeight: 24,
+                  fontSize: 16,
+                }}
+                value={search}
+                placeholder="What courses you're looking for..."
+                placeholderTextColor={"gray"}
+                onChangeText={(txt) => {
+                  onSearch(txt);
+                  setSearch(txt);
+                }}
+              />
+            </View>
+          </View>
+          {/* Filter section */}
+          <View style={{ marginTop: 20 }}>
+            <Text style={style.textStyle}>Categories</Text>
+            <View style={{ marginHorizontal: 10 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {filterCart.map((value, index) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setColorSelect(index);
+                        onFilterSelect(value.name);
+                      }}
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginVertical: 10,
+                      }}
+                    >
+                      <View
+                        style={{
+                          borderRadius: 24,
+                          width: wp(22),
+                        }}
+                      >
+                        <Text
+                          style={{
+                            textAlign: "center",
+                            color:
+                              index === (colorSelect || 0)
+                                ? Colors.red
+                                : "#404040",
+                            fontWeight: 600,
+                            fontSize: wp(4),
+                          }}
+                        >
+                          {value.name}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          marginTop: 5,
+                          borderWidth: 4,
+                          borderRadius: 999,
+                          borderColor:
+                            index === (colorSelect || 0)
+                              ? Colors.red
+                              : Colors.offWhite,
+                        }}
+                      ></View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+
+          {/*Show all course show  */}
+          <View style={{ flex: 1 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text style={style.textStyle}>Training Program</Text>
+            </View>
+            {/* inside course bird */}
+            <View
+              entering={FadeInDown.delay((index = 100)).duration(600)}
+              style={{
+                flex: 1,
+                marginHorizontal: 16,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                paddingBottom: wp(35),
+              }}
+            >
+              {dataBirdSpecies.map((val, index) => {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={{
+                      width: wp(44),
+                      height: wp(65),
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      position: "relative",
+                      paddingHorizontal: 16,
+                      paddingVertical: 24,
+                      marginTop: 20,
+                      marginBottom: 10,
+                    }}
+                    onPress={() => {
+                      navigation.navigate("BirdDetails", {
+                        getTrainingCourseId: val.id,
+                        dataCustomer: dataCustomerBird,
+                      });
+                    }}
+                  >
+                    <Animated.Image
+                      source={{ uri: val.picture }}
+                      style={{
+                        width: wp(44),
+                        height: wp(65),
+                        position: "absolute",
+                        borderRadius: 30,
+                      }}
+                    />
+                    <LinearGradient
+                      colors={["transparent", "rgba(0,0,0,0.8)"]}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        width: wp(44),
+                        height: hp(28),
+                        borderBottomLeftRadius: 25,
+                        borderBottomRightRadius: 25,
+                      }}
+                    />
+                    {/* course name */}
+                    <Text
+                      style={{
+                        width: "100%",
+                        fontSize: wp(4.5),
+                        textAlign: "center",
+                        color: "#ffffff",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {val.title}
+                    </Text>
+                    {/* course rating and category */}
+                    <View
+                      style={{
+                        marginTop: 10,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: wp(3),
+                          color: "#ffffff",
+                          fontWeight: 400,
+                          marginRight: 10,
+                        }}
+                      >
+                        {val.rating} lesson
+                      </Text>
+                      <View
+                        style={{
+                          borderLeftWidth: 1,
+                          borderColor: "#ffffff",
+                          marginRight: 10,
+                        }}
+                      ></View>
+                      <View
+                        style={{
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: wp(3),
+                            color: "#ffffff",
+                            fontWeight: 400,
+                          }}
+                        >
+                          <MaterialCommunityIcons
+                            name="timer-outline"
+                            size={wp(3)}
+                          />{" "}
+                          {val.totalSlot} Slot
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      {loading ? <Loader /> : null}
+    </>
   );
 };
-
 
 export default Home;
 
 const style = StyleSheet.create({
   textStyle: {
     marginHorizontal: 15,
-    fontSize: wp(6),
+    fontSize: wp(5.5),
     fontWeight: "600",
     paddingLeft: 5,
-    color: '#404040'
-  },
-
-  appBarWrapper: {
-    marginVertical: 20,
+    color: "#404040",
   },
 
   userStyle: {
-    fontSize: wp(6),
+    fontSize: wp(5.5),
     fontWeight: "600",
-    paddingLeft: 10,
-    color: '#404040'
+    paddingLeft: 20,
+    color: "#404040",
+    flexShrink: 1,
+    flexWrap: "wrap",
+    maxWidth: wp(50),
   },
 
   appBar: {
-    marginHorizontal: 15,
+    paddingVertical: 15,
+    marginHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
 
   searchContainer: {
-    marginTop: 20,
+    marginTop: 10,
     marginHorizontal: 15,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.white,
-    borderRadius: 10,
+    borderRadius: 50,
     paddingHorizontal: 16,
     height: 50,
     shadowColor: "#000",
     shadowOffset: {
-      width: 0,
+      width: 1,
       height: 5,
     },
     shadowOpacity: 0.32,
     shadowRadius: 5.46,
+    elevation: 15,
+    overflow: "hidden",
   },
 });
