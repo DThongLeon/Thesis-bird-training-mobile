@@ -48,6 +48,7 @@ import {
 
 import MarqueeView from "react-native-marquee-view";
 import Loader from "../Components/Loader";
+import { useStripe } from "@stripe/stripe-react-native";
 
 const BirdDetails = ({ route }) => {
   // loading
@@ -59,10 +60,8 @@ const BirdDetails = ({ route }) => {
   const [customerBird, setCustomerBird] = useState(route.params.dataCustomer);
   const [trainingCourse, setTrainingCourse] = useState({});
 
-
   // get session slot
   const [carouselData, setCarouselData] = useState([]);
-
 
   async function getTrainingId() {
     try {
@@ -81,7 +80,7 @@ const BirdDetails = ({ route }) => {
       });
       if (res) {
         setTrainingCourse(res.data);
-        setCarouselData(res.data.birdSkills)
+        setCarouselData(res.data.birdSkills);
         const getRegisterCustomer = JSON.stringify(res.data.registeredCustomer);
         const getCustomerId = JSON.stringify(
           customerBird.map((val) => val.customerId)
@@ -89,7 +88,6 @@ const BirdDetails = ({ route }) => {
         if (getRegisterCustomer === getCustomerId) {
           setIsRegister(true);
         }
-        
       }
     } catch (err) {
       alert(err);
@@ -140,6 +138,52 @@ const BirdDetails = ({ route }) => {
       setRefreshing(false);
       getTrainingId();
     }, 1000);
+  };
+  const [getPaymentId, setPaymentId] = useState("");
+
+  async function payMentIntentMethod() {
+    await axios("http://192.168.170.45:4000/payments/intents", {
+      method: "post",
+      headers: {
+        Accept: "application/json",
+      },
+      params: {
+        amount: trainingCourse.totalPrice,
+      },
+    }).then((res) => {
+      setPaymentId(res.data.paymentIntent);
+    });
+  }
+
+  const { initPaymentSheet, presentPaymentSheet, retrievePaymentIntent } =
+    useStripe();
+  const onCheckout = async () => {
+    // 1. Create a payment intent
+    payMentIntentMethod();
+
+    // 2. Initialize the Payment sheet
+    const initResponse = await initPaymentSheet({
+      merchantDisplayName: "Thesis-BirdTraining System",
+      paymentIntentClientSecret: getPaymentId,
+    });
+    if (initResponse.error) {
+      console.log(initResponse.error);
+      alert("Something went wrong");
+    }
+    // 3. Present the Payment Sheet from Stripe
+    const paymentResponse = await presentPaymentSheet();
+
+    if (paymentResponse.error) {
+      alert(
+        `Error code: ${paymentResponse.error.code}`,
+        paymentResponse.error.message
+      );
+    }
+
+    const getPaymentIntent = retrievePaymentIntent(getPaymentId)
+    console.log('getPaymentIntent', (await getPaymentIntent).paymentIntent)
+    // 4. If payment ok -> create the order
+    // handleRegister();
   };
 
   return (
@@ -415,80 +459,35 @@ const BirdDetails = ({ route }) => {
             >
               Your bird will learn:
             </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-                width: "100%",
-              }}
-            >
-              <AntDesign name="checkcircle" size={24} color={"green"} />
-              <Text
-                style={{
-                  marginHorizontal: 10,
-                  marginLeft: 20,
-                  fontSize: wp(5),
-                  fontWeight: 600,
-                  color: "#404040",
-                  flexWrap: "wrap",
-                  width: "77%",
-                }}
-              >
-                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
-              </Text>
-            </View>
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-                width: "100%",
-              }}
-            >
-              <AntDesign name="checkcircle" size={24} color={"green"} />
-              <Text
-                style={{
-                  marginHorizontal: 10,
-                  marginLeft: 20,
-                  fontSize: wp(5),
-                  fontWeight: 600,
-                  color: "#404040",
-                  flexWrap: "wrap",
-                  width: "77%",
-                }}
-              >
-                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-                width: "100%",
-              }}
-            >
-              <AntDesign name="checkcircle" size={24} color={"green"} />
-              <Text
-                style={{
-                  marginHorizontal: 10,
-                  marginLeft: 20,
-                  fontSize: wp(5),
-                  fontWeight: 600,
-                  color: "#404040",
-                  flexWrap: "wrap",
-                  width: "77%",
-                }}
-              >
-                dasdasdadasdasdasdadasdasdadadsadadsadasdasdasdasdasasdasdadadsadd
-              </Text>
-            </View>
+            {carouselData.map((val) => {
+              return (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 10,
+                    width: "100%",
+                  }}
+                >
+                  <AntDesign name="checkcircle" size={24} color={"green"} />
+                  <Text
+                    style={{
+                      marginHorizontal: 10,
+                      marginLeft: 20,
+                      fontSize: wp(4.5),
+                      fontWeight: 600,
+                      color: "#404040",
+                      flexWrap: "wrap",
+                      width: "80%",
+                    }}
+                  >
+                    {val.description}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
 
           {/* certificate */}
@@ -515,22 +514,24 @@ const BirdDetails = ({ route }) => {
             <View
               style={{
                 borderColor: Colors.grey,
-                width: "auto",
+                width: "90%",
                 height: hp(13),
                 borderRadius: 10,
-                borderWidth: 1,
+                borderWidth: 2,
                 marginVertical: 10,
+                marginHorizontal: 20,
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
               <Image
-                source={require("./../Assets/images/certificate.jpg")}
+                source={require("./../Assets/images/certificate.png")}
                 style={{
                   height: wp(15),
                   width: wp(15),
                   marginHorizontal: 20,
+                  backgroundColor: "transparent",
                 }}
               />
               <Text
@@ -538,11 +539,11 @@ const BirdDetails = ({ route }) => {
                   flex: 1,
                   flexWrap: "wrap",
                   fontSize: wp(3.5),
-                  letterSpacing: 0.2,
                   color: "#404040",
+                  fontWeight: 500,
                 }}
               >
-                Earn Certificate when complete traintrainingtraininging
+                Earn certificate when your bird done training
               </Text>
             </View>
           </View>
@@ -589,7 +590,7 @@ const BirdDetails = ({ route }) => {
               </Text>
             </ButtonDisabled>
           ) : (
-            <ButtonLogin onPress={handleRegister}>
+            <ButtonLogin onPress={onCheckout}>
               <Text
                 style={{ color: "#404040", fontWeight: 700, fontSize: wp(4.5) }}
               >

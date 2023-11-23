@@ -26,6 +26,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { decode, encode } from "base-64";
+import axios from "axios";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -36,8 +37,7 @@ if (!global.atob) {
 }
 
 const AddImage = ({ route }) => {
-  const [payload, setPayload] = useState({});
-  const [defaultBird, setDefaultBird] = useState(false);
+  console.log('rouet', route.params)
   const navigation = useNavigation();
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -108,25 +108,17 @@ const AddImage = ({ route }) => {
     );
   };
 
-  useEffect(() => {
-    AsyncStorage.getItem("AcceptToken").then((val) => {
-      if (val) {
-        setPayload(jwtDecode(val, { body: true }));
-      }
-    });
-  }, []);
-
   const onSubmitForm = () => {
     const form = new FormData();
-    form.append("Pictures", {
+    form.append("Picture", {
       uri: image,
       type: "image/jpeg",
       name: "bird-image",
     });
-    form.append("CustomerId", payload.id);
+    form.append("CustomerId", route.params.storage.id);
     form.append("Name", route.params.birdName);
     form.append("BirdSpeciesId", route.params.birdSpeciesId);
-    form.append("IsDefault", true);
+    form.append("IsDefault",  route.params.birdDefaultLogin);
 
     try {
       const response = fetch(
@@ -139,13 +131,20 @@ const AddImage = ({ route }) => {
           },
           body: form,
         }
-      ).then((response) => {
-        if (response.status === 200) {
-          navigation.navigate('Bottom Navigation', payload.id)
+        ).then((result) => {
+        console.log('form', form)
+        if (result.status === 200) {
+          const birdAndCustomer = {
+            birdId: route.params.birdSpeciesId,
+            customerId: route.params.storage.id,
+          };
+          AsyncStorage.setItem("dataId", JSON.stringify(birdAndCustomer));
+          navigation.navigate("Bottom Navigation");
         }
-      })
-        
-    } catch (err) {}
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -169,7 +168,6 @@ const AddImage = ({ route }) => {
             marginLeft: 20,
           }}
           onPress={() => {
-            AsyncStorage.removeItem("AcceptToken");
             navigation.goBack();
           }}
         >
@@ -190,6 +188,7 @@ const AddImage = ({ route }) => {
             </LoginPageTitle>
             {/* image selection action sheet */}
             <View
+              key={index}
               style={{
                 marginTop: 30,
                 flexDirection: "row",

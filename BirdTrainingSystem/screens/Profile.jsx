@@ -27,24 +27,29 @@ import {
   MaterialIcons,
   FontAwesome,
 } from "@expo/vector-icons";
-import { StackActions, useFocusEffect, useNavigation } from "@react-navigation/native";
+import {
+  StackActions,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ceil } from "lodash";
 import Loader from "../Components/Loader";
 
-const Profile = ({  route }) => {
-
-  console.log('Profile: ', route)
+const Profile = ({ route }) => {
   const navigation = useNavigation();
   // loading
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState();
   const [dataBird, setDataBird] = useState([]);
 
   async function getDataBird() {
+    setLoading(true);
     try {
-      setLoading(true);
+      // getData storage
+      const getDataId = await AsyncStorage.getItem("dataId").then((val) =>
+        JSON.parse(val)
+      );
       const res = await axios(
         "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
         {
@@ -52,25 +57,28 @@ const Profile = ({  route }) => {
           headers: {
             Accept: "application/json",
           },
-          // params: { customerId: route.customerId },
-          params: { customerId: route.customerId },
+          params: { customerId: getDataId?.customerId },
         }
       ).finally(() => {
         setLoading(false);
       });
       if (res.status === 200) {
+        
+        const getDefault = await AsyncStorage.getItem("defaultBird").then(
+          (val) => JSON.parse(val)
+        );
+        console.log("getDefault", getDefault);
+
+        console.log("result", res.data);
         const dataFilter = res.data.filter((params) => {
-          return (
-            JSON.stringify(params.birdSpeciesId).indexOf(
-              // route.val
-              route.val
-            ) > -1
-          );
+          if (getDefault === false) {
+            console.log("params.birdSpeciesId", params.birdSpeciesId);
+            return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
+          } else {
+            return JSON.stringify(params.isDefault).indexOf(true) > -1;
+          }
         });
-        console.log(res.data)
-        setName(res.data.map((params) => {
-          params.name
-        }));
+
         setDataBird(dataFilter);
       }
     } catch (err) {
@@ -78,11 +86,15 @@ const Profile = ({  route }) => {
     }
   }
 
-  
+  useFocusEffect(
+    useCallback(() => {
+      getDataBird();
+    }, [])
+  );
+
   const getBirdPicture = dataBird.map((item) => item.picture);
   const getBirdName = dataBird.map((item) => item.name);
   const getBirdSpeciesName = dataBird.map((val) => val.birdSpeciesName);
-  const getBirdSpeciesId = dataBird.map((val) => val.birdSpeciesId)
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -96,17 +108,7 @@ const Profile = ({  route }) => {
     });
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      getDataBird();
-    }, [route])
-  );
-
-
-  useEffect(() => {
-
-
-  }, [route])
+  useEffect(() => {}, [route]);
 
   return (
     <>
@@ -195,7 +197,6 @@ const Profile = ({  route }) => {
                       }}
                     >
                       {getBirdName[0]}
-                      {name}
                     </Text>
                   </View>
                 )}
@@ -230,7 +231,7 @@ const Profile = ({  route }) => {
           >
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate("EditProfile", { val: route.val, customerId: route.customerId, birdSpeciesId: getBirdSpeciesId });
+                navigation.navigate("EditProfile");
               }}
             >
               <View
@@ -269,7 +270,7 @@ const Profile = ({  route }) => {
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate("SwitchAccount", {
-                  val: route.val
+                  val: route.val,
                 });
               }}
             >
@@ -320,7 +321,11 @@ const Profile = ({  route }) => {
                   borderColor: Colors.grey,
                 }}
               >
-                <FontAwesome name="credit-card" size={24} color={Colors.primary} />
+                <FontAwesome
+                  name="credit-card"
+                  size={24}
+                  color={Colors.primary}
+                />
                 <Text
                   style={{
                     marginLeft: 24,
@@ -349,6 +354,7 @@ const Profile = ({  route }) => {
                 const token = AsyncStorage.getItem("AcceptToken");
                 if (token != null) {
                   AsyncStorage.removeItem("AcceptToken");
+                  AsyncStorage.removeItem("dataId");
                   navigation.dispatch(StackActions.popToTop());
                 }
               }}

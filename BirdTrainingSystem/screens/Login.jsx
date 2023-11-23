@@ -8,6 +8,7 @@ import {
   ImageBackground,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -71,6 +72,92 @@ const Login = ({ navigation }) => {
       .required("Password is required"),
   });
 
+  const [visible, setVisible] = useState(false);
+
+  const ModalPopUp = ({ children, visible }) => {
+    const [showModal, setShowModal] = useState(visible);
+
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const [getError, setError] = useState(false);
+
+  const ErrorPopUp = ({ children, error }) => {
+    const [errModal, setErrModal] = useState(error);
+
+    useEffect(() => {
+      toggleErr();
+    }, [error]);
+    const toggleErr = () => {
+      if (error) {
+        setErrModal(true);
+      } else {
+        setErrModal(false);
+      }
+    };
+    return (
+      <Modal transparent error={errModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // set async storage for customerID and birdId
+
   const handleLogin = (value) => {
     setLoading(true);
     login_api({
@@ -97,20 +184,42 @@ const Login = ({ navigation }) => {
               });
 
               if (res.status === 200) {
-                console.log('Login customeer bird: ', res.data);
+                // filter data with default value === true
                 const dataFilter = res.data.filter((params) => {
                   return JSON.stringify(params.isDefault).indexOf(true) > -1;
                 });
-                if (dataFilter.length === 0) {
-                  navigation.navigate("Register");
-                } else {
-                  let params = {
-                    val: dataFilter[0].birdSpeciesId,
-                    customerId: dataFilter[0].customerId
-                  };
-                  console.log(params);
-                  navigation.navigate("Bottom Navigation", params);
-                }
+
+                setVisible(true);
+                setTimeout(() => {
+                  if (dataFilter.length === 0) {
+
+                    setVisible(false);
+                    AsyncStorage.setItem(
+                      "defaultBird",
+                      JSON.stringify(true)
+                    );
+                    navigation.navigate("Register");
+                    
+                  } else {
+
+                    setVisible(false);
+                    // setAsyncStorage to store id customer and bird Id
+                    const birdAndCustomer = {
+                      birdId: dataFilter[0].birdSpeciesId,
+                      customerId: dataFilter[0].customerId,
+                    };
+                    AsyncStorage.setItem(
+                      "dataId",
+                      JSON.stringify(birdAndCustomer)
+                    );
+                    AsyncStorage.setItem(
+                      "defaultBird",
+                      JSON.stringify(dataFilter[0].isDefault)
+                    );
+                    navigation.navigate("Bottom Navigation");
+                  }
+                }, 2000);
+                setLoading(false);
               }
             }
             getSelectDefault();
@@ -118,11 +227,13 @@ const Login = ({ navigation }) => {
             alert(err);
           }
         } else if (result.status === 400) {
-          alert("Password or email incorrect please try again");
+          setTimeout(() => {
+            setError(true);
+          }, 2000);
         }
       })
       .catch((err) => {
-        alert(err);
+        setError(true);
       })
       .finally(() => {
         setLoading(false);
@@ -196,10 +307,84 @@ const Login = ({ navigation }) => {
                       {errors.password}
                     </Text>
                   )}
+                  <ModalPopUp visible={visible}>
+                    <View
+                      style={{
+                        alignItems: "center",
+                      }}
+                    >
+                      <LottieView
+                        source={require("./../Assets/loading/check-correct.json")}
+                        autoPlay
+                        loop={true}
+                        style={{
+                          width: 200,
+                          height: 200,
+                        }}
+                        // onAnimationFinish={{}}
+                      ></LottieView>
+                      <Text
+                        style={{
+                          fontSize: wp(5.5),
+                          color: "#404040",
+                          fontWeight: 800,
+                          textAlign: "center",
+                        }}
+                      >
+                        Login Successfully
+                      </Text>
+                    </View>
+                  </ModalPopUp>
 
                   <ButtonLogin onPress={handleSubmit}>
                     <ButtonText>Login</ButtonText>
                   </ButtonLogin>
+                  {getError == true && (
+                    <ErrorPopUp error={getError}>
+                      <View
+                        style={{
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => {
+                            setError(false);
+                          }}
+                          style={{
+                            alignItems: "flex-end",
+                            width: "100%",
+                          }}
+                        >
+                          <Ionicons
+                            name="md-close-outline"
+                            size={30}
+                            color="black"
+                          />
+                        </TouchableOpacity>
+                        <LottieView
+                          source={require("./../Assets/loading/error.json")}
+                          autoPlay
+                          loop={true}
+                          style={{
+                            top: -20,
+                            width: 250,
+                            height: 250,
+                          }}
+                        ></LottieView>
+                        <Text
+                          style={{
+                            top: -20,
+                            fontSize: wp(5),
+                            color: "red",
+                            fontWeight: 800,
+                            textAlign: "center",
+                          }}
+                        >
+                          Error occurred {"\n"} Please try again !!
+                        </Text>
+                      </View>
+                    </ErrorPopUp>
+                  )}
                   <Line />
 
                   <TextLink

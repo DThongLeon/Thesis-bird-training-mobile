@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   StyleSheet,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
@@ -32,9 +33,9 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import * as yup from "yup";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EditProfile = ({ route }) => {
-  // console.log(route.params)
   const [dataSpecies, setDataSpecies] = useState([]);
 
   const [customerBirdInfo, setCustomerBirdInfo] = useState([]);
@@ -59,6 +60,7 @@ const EditProfile = ({ route }) => {
     if (!a.canceled) {
       setImage(a.assets[0].uri);
     }
+    console.log("(image)", a.assets[0].uri);
   };
 
   const pickCamera = async () => {
@@ -111,6 +113,11 @@ const EditProfile = ({ route }) => {
 
   async function getCustomerBird() {
     try {
+      // getData storage
+      const getDataId = await AsyncStorage.getItem("dataId").then((val) =>
+        JSON.parse(val)
+      );
+
       const res = await axios(
         "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
         {
@@ -118,17 +125,27 @@ const EditProfile = ({ route }) => {
           headers: {
             Accept: "application/json",
           },
-          params: { customerId: route.params.customerId },
+          params: { customerId: getDataId?.customerId },
         }
       );
       if (res) {
         setBaseDataToFilter(res.data);
 
+        const getDefault = await AsyncStorage.getItem("defaultBird").then(
+          (val) => JSON.parse(val)
+        );
+        console.log("getDefault", getDefault);
+
+        console.log("result", res.data);
         const dataFilter = res.data.filter((params) => {
-          return (
-            JSON.stringify(params.birdSpeciesId).indexOf(route.params.val) > -1
-          );
+          if (getDefault === false) {
+            console.log("params.birdSpeciesId", params.birdSpeciesId);
+            return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
+          } else {
+            return JSON.stringify(params.isDefault).indexOf(true) > -1;
+          }
         });
+
         setCustomerBirdInfo(dataFilter);
       }
     } catch (err) {
@@ -142,34 +159,34 @@ const EditProfile = ({ route }) => {
     }, [])
   );
 
-  useEffect(() => {
-    fetch("http://13.214.85.41/api/trainingcourse-customer/birdspecies", {
-      method: "get",
-      headers: {
-        Accept: "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        if (json) {
-          const dataSpecies = route.params.birdSpeciesId;
+  // useEffect(() => {
+  //   fetch("http://13.214.85.41/api/trainingcourse-customer/birdspecies", {
+  //     method: "get",
+  //     headers: {
+  //       Accept: "application/json",
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((json) => {
+  //       if (json) {
+  //         const dataSpecies = route.params.birdSpeciesId;
 
-          const filterSpeciesRemainder = baseDataToFilter.filter((val) => {
-            return !dataSpecies.includes(val.birdSpeciesId);
-          });
+  //         const filterSpeciesRemainder = baseDataToFilter.filter((val) => {
+  //           return !dataSpecies.includes(val.birdSpeciesId);
+  //         });
 
-          const filterSpecies = json.filter((val) => {
-            return !filterSpeciesRemainder
-              .map((val) => val.birdSpeciesId)
-              .includes(val.id);
-          });
-          setDataSpecies(filterSpecies);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+  //         const filterSpecies = json.filter((val) => {
+  //           return !filterSpeciesRemainder
+  //             .map((val) => val.birdSpeciesId)
+  //             .includes(val.id);
+  //         });
+  //         setDataSpecies(filterSpecies);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //     });
+  // }, []);
 
   const [selectValue, setSelectedValue] = useState(selectValue);
 
@@ -189,16 +206,17 @@ const EditProfile = ({ route }) => {
 
   const onHandleUpdateBird = (value) => {
     const form = new FormData();
-    form.append("Pictures", {
-      uri: image,
+    form.append("Picture", {
+      uri: image ? image : customerBirdInfo[0].picture,
       type: "image/jpeg",
       name: "bird-image",
     });
     form.append("Id", customerBirdInfo[0].id);
     form.append("Name", value);
-    form.append("BirdSpeciesId", selectValue);
+    form.append("BirdSpeciesId", customerBirdInfo[0].birdSpeciesId);
     form.append("IsDefault", customerBirdInfo[0].isDefault);
 
+    console.log(form);
     try {
       const response = fetch(
         "http://13.214.85.41/api/trainingcourse-customer/update-bird",
@@ -211,16 +229,9 @@ const EditProfile = ({ route }) => {
           body: form,
         }
       )
-        .then((response) => {
-          if (response.status === 200) {
-            navigation.navigate(
-              "Bottom Navigation",
-              {
-                customerId: customerBirdInfo[0].customerId,
-                val: selectValue,
-              },
-              
-            );
+        .then((result) => {
+          if (result.status === 200) {
+            navigation.navigate("Bottom Navigation");
           }
         })
         .catch((error) => {
@@ -231,10 +242,27 @@ const EditProfile = ({ route }) => {
     }
   };
 
+  // Refresh cycle
+  const [refreshing, setRefreshing] = useState(false);
+
+  const RefreshCycle = () => {
+    setRefreshing(true);
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setRefreshing(false);
+      getCustomerBird();
+      getSelectDefault();
+    });
+  };
+
   return (
     <ScrollView
-      style={{ height: "100%" }}
+      style={{ height: "100%", flex: 1 }}
       keyboardShouldPersistTaps={"handled"}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={RefreshCycle} />
+      }
     >
       {customerBirdInfo.map((val, index) => {
         return (
@@ -371,7 +399,7 @@ const EditProfile = ({ route }) => {
                         </Text>
                       )}
                       {/* Picker value bird */}
-                      <View
+                      {/* <View
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
@@ -427,7 +455,7 @@ const EditProfile = ({ route }) => {
                             })}
                           </Picker>
                         </View>
-                      </View>
+                      </View> */}
                       <StyledFromArea>
                         <ButtonLogin
                           style={{

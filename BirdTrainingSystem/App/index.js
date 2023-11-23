@@ -17,6 +17,7 @@ import {
   SeeAll,
   TrainingReport,
   SwitchAccount,
+  Certificate,
 } from "../screens";
 import Register from "../navigation/Register";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
@@ -24,8 +25,8 @@ import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { decode, encode } from "base-64";
-import AppLoading from 'expo-app-loading';
-
+import AppLoading from "expo-app-loading";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -49,133 +50,147 @@ export default App = () => {
   // }, fontLoaded);
 
   // if (!fontLoaded) return null;
+  const pubStripeKey  = 'pk_test_51OARbWBE05GWCL9eWy2vDqXNLR4L9M1YVtkVExQSkqqQYO8hvUGGjawadvsqIAcXuKX6Aw4tGvqUJQHm2Bf6xNZo00wJQ7LwMh'
 
   return (
     <ActionSheetProvider>
-      <Stack.Navigator initialRouteName="Welcome">
-        <Stack.Screen
-          name="Bottom Navigation"
-          component={BottomTabNavigation}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={Register}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="Welcome"
-          component={Welcome}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="ForgetPassword"
-          component={ForgetPassword}
-          options={{
-            headerShown: true,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="BirdDetails"
-          component={BirdDetails}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="WorkshopDetails"
-          component={WorkshopDetails}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
+      <StripeProvider publishableKey={pubStripeKey}>
+        <Stack.Navigator initialRouteName="Welcome">
+          <Stack.Screen
+            name="Bottom Navigation"
+            component={BottomTabNavigation}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={Register}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="Welcome"
+            component={Welcome}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="ForgetPassword"
+            component={ForgetPassword}
+            options={{
+              headerShown: true,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="BirdDetails"
+            component={BirdDetails}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="WorkshopDetails"
+            component={WorkshopDetails}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
 
-        <Stack.Screen
-          name="DetailsOnGoing"
-          component={DetailsOnGoing}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="EditProfile"
-          component={EditProfile}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="SeeAll"
-          component={SeeAll}
-          options={{
-            headerShown: true,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-        <Stack.Screen
-          name="TrainingReport"
-          component={TrainingReport}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
+          <Stack.Screen
+            name="DetailsOnGoing"
+            component={DetailsOnGoing}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfile}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="SeeAll"
+            component={SeeAll}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name="TrainingReport"
+            component={TrainingReport}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
 
-        <Stack.Screen
-          name="SwitchAccount"
-          component={SwitchAccount}
-          options={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "column",
-            CardStyleInterpolation: "linear",
-          }}
-        />
-      </Stack.Navigator>
+          <Stack.Screen
+            name="SwitchAccount"
+            component={SwitchAccount}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+
+          <Stack.Screen
+            name="Certificate"
+            component={Certificate}
+            options={{
+              headerShown: true,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+        </Stack.Navigator>
+      </StripeProvider>
     </ActionSheetProvider>
   );
 };
