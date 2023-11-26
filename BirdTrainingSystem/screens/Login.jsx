@@ -256,7 +256,7 @@ const Login = ({ navigation }) => {
           <InnerContainer>
             <LoginLogo
               resizeMode="cover"
-              source={require("./../Assets/images/bird.jpg")}
+              source={require("./../Assets/images/bird.png")}
             ></LoginLogo>
             <LoginPageTitle>Training Academy</LoginPageTitle>
             <Formik

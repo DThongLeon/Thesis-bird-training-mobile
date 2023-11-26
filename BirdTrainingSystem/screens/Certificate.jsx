@@ -24,7 +24,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors } from "../constants/theme";
 import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Category } from "../constants/categories";
 import { find, includes } from "lodash";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import moment from "moment";

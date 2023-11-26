@@ -10,16 +10,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 const Tab = createMaterialBottomTabNavigator();
 
-const BottomTabNavigation = ({ route }) => {
-  // const [changeRoute, setChangeRoute] = useState(null);
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     setChangeRoute(route.params);
-  //   }, [route.params])
-  // );
-
-  // console.log(changeRoute);
+const BottomTabNavigation = () => {
   const theme = useTheme();
   theme.colors.secondaryContainer = "transparent";
   return (
@@ -36,12 +27,11 @@ const BottomTabNavigation = ({ route }) => {
         height: 65,
       }}
     >
-      {/* Hpome */}
+      {/* Home */}
       <Tab.Screen
         key={index}
         name={"Home"}
         component={Home}
-        // initialParams={changeRoute}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
@@ -57,7 +47,6 @@ const BottomTabNavigation = ({ route }) => {
       {/* Progress */}
       <Tab.Screen
         key={index}
-        // initialParams={changeRoute}
         name={"Progress"}
         component={Progress}
         options={{
@@ -76,8 +65,6 @@ const BottomTabNavigation = ({ route }) => {
       <Tab.Screen
         key={index}
         name={"Profile"}
-        // children={() => <Profile route={changeRoute} />}
-        // initialParams={changeRoute}
         component={Profile}
         options={{
           tabBarIcon: ({ color }) => (

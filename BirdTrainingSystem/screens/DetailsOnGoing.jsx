@@ -284,16 +284,16 @@ const DetailsOnGoing = ({ route }) => {
                   }}
                 />
                 <Text style={style.monthStyle}>
-                  {moment(route?.params?.value.startTrainingDate, "MMDDYYYY")
+                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
                     .format("MMM")
                     .toUpperCase()}
                   {"-"}
-                  {moment(route?.params?.value.startTrainingDate, "MMDDYYYY")
+                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
                     .format("DD")
                     .toUpperCase()}
                 </Text>
                 <Text style={style.dateStyle}>
-                  {moment(route?.params?.value.startTrainingDate, "MMDDYYYY")
+                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
                     .format("YY")
                     .toUpperCase()}
                 </Text>
@@ -893,7 +893,7 @@ const style = StyleSheet.create({
   },
 
   monthStyle: {
-    opacity: 0.5,
+    opacity: 0.9,
     fontSize: wp(3.5),
     textAlign: "center",
     fontWeight: "400",
