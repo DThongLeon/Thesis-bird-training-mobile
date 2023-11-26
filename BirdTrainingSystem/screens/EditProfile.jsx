@@ -139,8 +139,9 @@ const EditProfile = ({ route }) => {
         console.log("result", res.data);
         const dataFilter = res.data.filter((params) => {
           if (getDefault === false) {
-            console.log("params.birdSpeciesId", params.birdSpeciesId);
-            return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
+            return (
+              JSON.stringify(params.id) === JSON.stringify(getDataId.birdId)
+            );
           } else {
             return JSON.stringify(params.isDefault).indexOf(true) > -1;
           }

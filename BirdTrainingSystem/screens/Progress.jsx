@@ -24,7 +24,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors } from "../constants/theme";
 import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Category } from "../constants/categories";
 import { find, includes } from "lodash";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import moment, { isMoment } from "moment";
@@ -70,16 +69,12 @@ const Progress = ({ route }) => {
       if (response) {
 
         const getDefault = await AsyncStorage.getItem("defaultBird").then(val => JSON.parse(val))
-        console.log('getDefault', getDefault)
   
         setLoading(true);
   
-        console.log('result', response.data)
         const dataFilter = response.data.filter((params) => {
           if (getDefault === false) {
-            console.log('params.birdSpeciesId', params.birdSpeciesId)
-           return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
-            
+           return  JSON.stringify(params.id) === JSON.stringify(getDataId.birdId);
           } else {
             return JSON.stringify(params.isDefault).indexOf(true) > -1;
           }
@@ -416,7 +411,7 @@ const Progress = ({ route }) => {
                               >
                                 {moment(
                                   value.registeredDate,
-                                  "MMDDYYYY"
+                                  "DDMMYYYY"
                                 ).format("DD/MM/YYYY")}
                               </Text>
                             </View>
@@ -670,7 +665,7 @@ const Progress = ({ route }) => {
                               >
                                 {moment(
                                   value.registeredDate,
-                                  "MMDDYYYY"
+                                  "DDMMYYYY"
                                 ).format("DD/MM/YYYY")}
                               </Text>
                             </View>
@@ -906,7 +901,7 @@ const Progress = ({ route }) => {
                               >
                                 {moment(
                                   value.registeredDate,
-                                  "MMDDYYYY"
+                                  "DDMMYYYY"
                                 ).format("DD/MM/YYYY")}
                               </Text>
                             </View>
@@ -1143,7 +1138,7 @@ const Progress = ({ route }) => {
                               >
                                 {moment(
                                   value.registeredDate,
-                                  "MMDDYYYY"
+                                  "DDMMYYYY"
                                 ).format("DD/MM/YYYY")}
                               </Text>
                             </View>

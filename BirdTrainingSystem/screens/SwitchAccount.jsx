@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   RefreshControl,
   FlatList,
+  Modal,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Colors } from "../constants/theme";
@@ -60,6 +61,7 @@ const SwitchAccount = ({ route }) => {
   // data customer bird
   const [dataCustomerBird, setDataCustomerBird] = useState([]);
 
+  // filter get species
   const [dataSelected, setDataSelected] = useState([]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -98,18 +100,14 @@ const SwitchAccount = ({ route }) => {
       const getDefault = await AsyncStorage.getItem("defaultBird").then((val) =>
         JSON.parse(val)
       );
-      console.log("getDefault", getDefault);
 
-      console.log("result", result.data);
       const getBirdSpecies = result.data.filter((params) => {
         if (getDefault === false) {
-          console.log("params.birdSpeciesId", params.birdSpeciesId);
-          return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
+          return JSON.stringify(params.id).indexOf(getDataId.birdId) > -1;
         } else {
           return JSON.stringify(params.isDefault).indexOf(true) > -1;
         }
       });
-      console.log("getBirdSpecies", getBirdSpecies);
 
       setDataSelected(getBirdSpecies);
       setDataCustomerBird(result.data);
@@ -121,6 +119,92 @@ const SwitchAccount = ({ route }) => {
       getAllCustomerBird();
     }, [])
   );
+
+  const [visible, setVisible] = useState(false);
+
+  const ModalPopUp = ({ children, visible }) => {
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+
+    const [showModal, setShowModal] = useState(visible);
+
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const [switchData, setSwitch] = useState(false);
+
+  const ModalSwitchBird = ({ children, visible }) => {
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+
+    const [showModal, setShowModal] = useState(visible);
+
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -180,7 +264,8 @@ const SwitchAccount = ({ route }) => {
         {/* register new bird */}
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("Register");
+            setVisible(true);
+            // AsyncStorage.removeItem("dataId");
           }}
           style={{
             marginTop: 5,
@@ -189,6 +274,91 @@ const SwitchAccount = ({ route }) => {
             justifyContent: "center",
           }}
         >
+          <ModalPopUp visible={visible}>
+            <View
+              style={{
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: wp(5.5),
+                  color: "#404040",
+                  fontWeight: 800,
+                  textAlign: "center",
+                }}
+              >
+                Are you sure you want to Register new bird to this account?
+              </Text>
+              <View
+                style={{
+                  marginTop: 20,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => setVisible(false)}
+                  style={{
+                    backgroundColor: "red",
+                    padding: 10,
+                    borderRadius: 15,
+                    width: 100,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 20,
+                  }}
+                >
+                  <Text
+                    style={{
+                      width: "100%",
+                      fontSize: wp(4.5),
+                      textAlign: "center",
+                      color: "#ffffff",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setVisible(false);
+                    AsyncStorage.removeItem("defaultBird");
+                    const setDefault = AsyncStorage.setItem(
+                      "defaultBird",
+                      JSON.stringify(false)
+                    );
+                    const setBirdSpecies = AsyncStorage.setItem(
+                      "setBirdSpecies",
+                      JSON.stringify(dataCustomerBird)
+                    );
+                    navigation.navigate("Register");
+                  }}
+                  style={{
+                    backgroundColor: "blue",
+                    padding: 10,
+                    borderRadius: 15,
+                    width: 100,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      width: "100%",
+                      fontSize: wp(4.5),
+                      textAlign: "center",
+                      color: "#ffffff",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Register
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ModalPopUp>
           <View
             style={{
               borderColor: Colors.grey,
@@ -249,6 +419,7 @@ const SwitchAccount = ({ route }) => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            paddingBottom: 30,
           }}
         >
           {dataCustomerBird.map((val, index) => {
@@ -274,11 +445,11 @@ const SwitchAccount = ({ route }) => {
                       birdId: val.id,
                       customerId: val.customerId,
                     };
-                    const setDataId = AsyncStorage.setItem(
+                    AsyncStorage.setItem(
                       "dataId",
                       JSON.stringify(birdAndCustomer)
                     );
-                    const setDefault = AsyncStorage.setItem(
+                    AsyncStorage.setItem(
                       "defaultBird",
                       JSON.stringify(val.isDefault)
                     );
@@ -290,11 +461,12 @@ const SwitchAccount = ({ route }) => {
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: 13,
+                      padding: 10,
                     }}
                   >
                     <View
                       style={{
+                        justifyContent: "center",
                         flexDirection: "row",
                         alignItems: "center",
                       }}
@@ -318,7 +490,9 @@ const SwitchAccount = ({ route }) => {
                         }}
                       >
                         <Text
+                          numberOfLines={1}
                           style={{
+                            width: wp(45),
                             fontSize: wp(4),
                             fontWeight: "700",
                             color: "#404040",
@@ -326,28 +500,30 @@ const SwitchAccount = ({ route }) => {
                         >
                           Bird Name: {val.name}
                         </Text>
-                        <Text>Type : {val.birdSpeciesName}</Text>
+                        <Text
+                          numberOfLines={2}
+                          style={{
+                            width: wp(45),
+                            fontSize: wp(3),
+                            fontWeight: "500",
+                            color: "#404040",
+                          }}
+                        >
+                          Type : {val.birdSpeciesName}
+                        </Text>
                       </View>
-                      <Text
-                        style={{
-                          fontSize: wp(3.5),
-                          fontWeight: "500",
-                          color: "#404040",
-                        }}
-                      ></Text>
                     </View>
                     {/* select radio button custom */}
                     <View
                       style={{
                         borderColor: Colors.grey,
                         backgroundColor:
-                          val.id === dataSelected[0].id
-                            ? "green"
-                            : null,
+                          val.id === dataSelected[0].id ? "green" : null,
                         borderWidth: 3,
                         borderRadius: 99,
                         width: wp(5),
                         height: wp(5),
+                        marginRight: 20,
                       }}
                     ></View>
                   </View>

@@ -22,7 +22,6 @@ import {
 } from "@expo/vector-icons";
 import { Colors } from "../constants/theme";
 
-import { Category } from "../constants/categories";
 import { Course } from "../constants/viewListCourse";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import BirdDetails from "./BirdDetails";
@@ -87,28 +86,22 @@ const Home = ({ route }) => {
       }
     ).finally(() => {
       setLoading(false);
-    })
+    });
     if (result.status === 200) {
-
-      const getDefault = await AsyncStorage.getItem("defaultBird").then(val => JSON.parse(val))
-      console.log('getDefault', getDefault)
-
+      const getDefault = await AsyncStorage.getItem("defaultBird").then((val) =>
+        JSON.parse(val)
+      );
       setLoading(true);
 
-      console.log('result', result.data)
       const getBirdSpecies = result.data.filter((params) => {
         if (getDefault === false) {
-          console.log('params.birdSpeciesId', params.birdSpeciesId)
-         return JSON.stringify(params.id).indexOf(getDataId?.birdId) > -1;
-          
+          return JSON.stringify(params.id) === JSON.stringify(getDataId.birdId);
         } else {
           return JSON.stringify(params.isDefault).indexOf(true) > -1;
         }
       });
 
       setDataCustomerBird(getBirdSpecies);
-
-      console.log('getBirdSpecies', getBirdSpecies)
 
       const getSpecies = await axios(
         "http://13.214.85.41/api/trainingcourse-customer/trainingcourse-species",

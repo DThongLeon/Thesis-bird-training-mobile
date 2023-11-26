@@ -72,14 +72,18 @@ const Login = ({ navigation }) => {
       .required("Password is required"),
   });
 
+  // success case
   const [visible, setVisible] = useState(false);
 
   const ModalPopUp = ({ children, visible }) => {
-    const [showModal, setShowModal] = useState(visible);
 
     useEffect(() => {
       toggleModel();
     }, [visible]);
+    
+    const [showModal, setShowModal] = useState(visible);
+
+    
     const toggleModel = () => {
       if (visible) {
         setShowModal(true);
@@ -114,6 +118,7 @@ const Login = ({ navigation }) => {
     );
   };
 
+  // fail case
   const [getError, setError] = useState(false);
 
   const ErrorPopUp = ({ children, error }) => {

@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   RefreshControl,
   FlatList,
+  Modal,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Colors } from "../constants/theme";
@@ -48,6 +49,7 @@ import {
 
 import MarqueeView from "react-native-marquee-view";
 import Loader from "../Components/Loader";
+import LottieView from "lottie-react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 
 const BirdDetails = ({ route }) => {
@@ -81,12 +83,18 @@ const BirdDetails = ({ route }) => {
       if (res) {
         setTrainingCourse(res.data);
         setCarouselData(res.data.birdSkills);
-        const getRegisterCustomer = JSON.stringify(res.data.registeredCustomer);
-        const getCustomerId = JSON.stringify(
-          customerBird.map((val) => val.customerId)
-        );
-        if (getRegisterCustomer === getCustomerId) {
+
+        const getCustomerId = customerBird.map((val) => val.id);
+        const dataFilter = res.data.registeredBird;
+
+        const result = dataFilter.filter((val) => {
+          return val === getCustomerId[0];
+        });
+
+        if (result[0] === getCustomerId[0]) {
           setIsRegister(true);
+        } else {
+          setIsRegister(false);
         }
       }
     } catch (err) {
@@ -111,14 +119,22 @@ const BirdDetails = ({ route }) => {
     };
     try {
       const res = await axios.post(
-        "http://13.214.85.41/api/trainingcourse-customer/register-trainingcourse",
-        userData
+        "http://13.214.85.41/api/trainingcourse-customer/register-trainingcourse"
+        // userData
       );
       if (res.status === 200) {
-        setIsRegister((value) => !value);
+        setVisible(true);
+        setTimeout(() => {
+          setIsRegister((value) => !value);
+          setVisible(false);
+        }, 2000);
+      } else if (result.status === 400) {
+        setTimeout(() => {
+          setErrorCase(true);
+        }, 2000);
       }
     } catch (err) {
-      alert(err);
+      setErrorCase(true);
     }
   };
 
@@ -142,7 +158,7 @@ const BirdDetails = ({ route }) => {
   const [getPaymentId, setPaymentId] = useState("");
 
   async function payMentIntentMethod() {
-    await axios("http://192.168.170.45:4000/payments/intents", {
+    await axios("http://192.168.1.173:4000/payments/intents", {
       method: "post",
       headers: {
         Accept: "application/json",
@@ -155,35 +171,121 @@ const BirdDetails = ({ route }) => {
     });
   }
 
-  const { initPaymentSheet, presentPaymentSheet, retrievePaymentIntent } =
-    useStripe();
+  // success case
+  const [visible, setVisible] = useState(false);
+
+  const ModalPopUp = ({ children, visible }) => {
+    const [showModal, setShowModal] = useState(visible);
+
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // fail case
+  const [getErrorCase, setErrorCase] = useState(false);
+
+  const ErrorPopUp = ({ children, error }) => {
+    const [errModal, setErrModal] = useState(error);
+
+    useEffect(() => {
+      toggleErr();
+    }, [error]);
+    const toggleErr = () => {
+      if (error) {
+        setErrModal(true);
+      } else {
+        setErrModal(false);
+      }
+    };
+    return (
+      <Modal transparent error={errModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // const { initPaymentSheet, presentPaymentSheet, retrievePaymentIntent } =
+  //   useStripe();
   const onCheckout = async () => {
     // 1. Create a payment intent
-    payMentIntentMethod();
+    // payMentIntentMethod();
 
     // 2. Initialize the Payment sheet
-    const initResponse = await initPaymentSheet({
-      merchantDisplayName: "Thesis-BirdTraining System",
-      paymentIntentClientSecret: getPaymentId,
-    });
-    if (initResponse.error) {
-      console.log(initResponse.error);
-      alert("Something went wrong");
-    }
+    // const initResponse = await initPaymentSheet({
+    //   merchantDisplayName: "Thesis-BirdTraining System",
+    //   paymentIntentClientSecret: getPaymentId,
+    // });
+    // if (initResponse.error) {
+    //   console.log(initResponse.error);
+    //   alert("Something went wrong");
+    // }
     // 3. Present the Payment Sheet from Stripe
-    const paymentResponse = await presentPaymentSheet();
+    // const paymentResponse = await presentPaymentSheet();
 
-    if (paymentResponse.error) {
-      alert(
-        `Error code: ${paymentResponse.error.code}`,
-        paymentResponse.error.message
-      );
-    }
+    // if (paymentResponse.error) {
+    //   alert(
+    //     `Error code: ${paymentResponse.error.code}`,
+    //     paymentResponse.error.message
+    //   );
+    // }
 
-    const getPaymentIntent = retrievePaymentIntent(getPaymentId)
-    console.log('getPaymentIntent', (await getPaymentIntent).paymentIntent)
+    // const getPaymentIntent = retrievePaymentIntent(getPaymentId)
+    // console.log('getPaymentIntent', (await getPaymentIntent).paymentIntent)
     // 4. If payment ok -> create the order
-    // handleRegister();
+    handleRegister();
   };
 
   return (
@@ -590,13 +692,93 @@ const BirdDetails = ({ route }) => {
               </Text>
             </ButtonDisabled>
           ) : (
-            <ButtonLogin onPress={onCheckout}>
-              <Text
-                style={{ color: "#404040", fontWeight: 700, fontSize: wp(4.5) }}
-              >
-                Register
-              </Text>
-            </ButtonLogin>
+            <View>
+              <ModalPopUp visible={visible}>
+                <View
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
+                  <LottieView
+                    source={require("./../Assets/loading/check-correct.json")}
+                    autoPlay
+                    loop={true}
+                    style={{
+                      width: 200,
+                      height: 200,
+                    }}
+                    // onAnimationFinish={{}}
+                  ></LottieView>
+                  <Text
+                    style={{
+                      fontSize: wp(5.5),
+                      color: "#404040",
+                      fontWeight: 800,
+                      textAlign: "center",
+                    }}
+                  >
+                    Registered course for your bird successfully !
+                  </Text>
+                </View>
+              </ModalPopUp>
+              <ButtonLogin onPress={onCheckout}>
+                <Text
+                  style={{
+                    color: "#404040",
+                    fontWeight: 700,
+                    fontSize: wp(4.5),
+                  }}
+                >
+                  Register
+                </Text>
+              </ButtonLogin>
+              {getErrorCase == true && (
+                <ErrorPopUp error={getError}>
+                  <View
+                    style={{
+                      alignItems: "center",
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        setErrorCase(false);
+                      }}
+                      style={{
+                        alignItems: "flex-end",
+                        width: "100%",
+                      }}
+                    >
+                      <Ionicons
+                        name="md-close-outline"
+                        size={30}
+                        color="black"
+                      />
+                    </TouchableOpacity>
+                    <LottieView
+                      source={require("./../Assets/loading/error.json")}
+                      autoPlay
+                      loop={true}
+                      style={{
+                        top: -20,
+                        width: 250,
+                        height: 250,
+                      }}
+                    ></LottieView>
+                    <Text
+                      style={{
+                        top: -20,
+                        fontSize: wp(5),
+                        color: "red",
+                        fontWeight: 800,
+                        textAlign: "center",
+                      }}
+                    >
+                      Error occurred {"\n"} Please try again !!
+                    </Text>
+                  </View>
+                </ErrorPopUp>
+              )}
+            </View>
           )}
         </View>
       </View>

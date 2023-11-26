@@ -31,6 +31,10 @@ const RegisterBirdName = ({ navigation }) => {
 
   const [dataSpecies, setDataSpecies] = useState([]);
 
+  const [dataBirdId, setDataBirdId] = useState(null);
+
+  const [dataSpeciesFilter, setDataFilter] = useState(null);
+
   const [text, onChangeText] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
 
@@ -63,16 +67,14 @@ const RegisterBirdName = ({ navigation }) => {
       .then((response) => response.json())
       .then((json) => {
         if (json) {
+          const getDataBirdId = AsyncStorage.getItem("dataId").then((res) =>
+            setDataBirdId(JSON.parse(res))
+          );
           const getDataId = AsyncStorage.getItem("AcceptToken").then((val) => {
             setDataStorage(JSON.parse(val));
           });
           const getDefault = AsyncStorage.getItem("defaultBird").then((val) => {
-            console.log("getDefault", JSON.parse(val) != null);
-            if (JSON.parse(val) != null) {
-              setDefaultBirdFromLogin(JSON.parse(val));
-            } else {
-              setDefaultBirdFromLogin(false);
-            }
+            setDefaultBirdFromLogin(JSON.parse(val));
           });
           setDataSpecies(json);
         }
@@ -82,43 +84,11 @@ const RegisterBirdName = ({ navigation }) => {
       });
   }, []);
 
-  console.log("getDefaultBirdFromLogin", getDefaultBirdFromLogin);
   return (
     <ScrollView
       style={{ height: "100%" }}
       keyboardShouldPersistTaps={"handled"}
     >
-      {/* back buttons */}
-      <Animated.View
-        entering={FadeIn.delay(200).duration(500)}
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          position: "absolute",
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            padding: 2,
-            marginVertical: 30,
-            borderRadius: 9999,
-            marginLeft: 20,
-          }}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Ionicons
-            name="chevron-back-outline"
-            size={wp(7)}
-            strokeWidth={10}
-            color="black"
-          />
-        </TouchableOpacity>
-      </Animated.View>
-
       <StyledContainer>
         <StatusBar style="dark" />
         <InnerContainer>
@@ -224,18 +194,6 @@ const RegisterBirdName = ({ navigation }) => {
         </InnerContainer>
       </StyledContainer>
     </ScrollView>
-  );
-};
-
-export const BackgroundImage = ({ children }) => {
-  return (
-    <View>
-      <ImageBackground
-        source={require("./../Assets/images/leaves.jpg")}
-        style={{ height: "100%" }}
-      />
-      <View style={{ position: "absolute" }}>{children}</View>
-    </View>
   );
 };
 
