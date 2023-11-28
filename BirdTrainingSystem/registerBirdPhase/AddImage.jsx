@@ -5,6 +5,7 @@ import {
   ImageBackground,
   TouchableWithoutFeedback,
   StyleSheet,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
@@ -26,6 +27,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { decode, encode } from "base-64";
+import axios from "axios";
+import LottieView from "lottie-react-native";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -36,8 +39,6 @@ if (!global.atob) {
 }
 
 const AddImage = ({ route }) => {
-  const [payload, setPayload] = useState({});
-  const [defaultBird, setDefaultBird] = useState(false);
   const navigation = useNavigation();
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -108,25 +109,17 @@ const AddImage = ({ route }) => {
     );
   };
 
-  useEffect(() => {
-    AsyncStorage.getItem("AcceptToken").then((val) => {
-      if (val) {
-        setPayload(jwtDecode(val, { body: true }));
-      }
-    });
-  }, []);
-
   const onSubmitForm = () => {
     const form = new FormData();
-    form.append("Pictures", {
+    form.append("Picture", {
       uri: image,
       type: "image/jpeg",
       name: "bird-image",
     });
-    form.append("CustomerId", payload.id);
+    form.append("CustomerId", route.params.storage.id);
     form.append("Name", route.params.birdName);
     form.append("BirdSpeciesId", route.params.birdSpeciesId);
-    form.append("IsDefault", true);
+    form.append("IsDefault", route.params.birdDefaultLogin);
 
     try {
       const response = fetch(
@@ -139,13 +132,66 @@ const AddImage = ({ route }) => {
           },
           body: form,
         }
-      ).then((response) => {
-        if (response.status === 200) {
-          navigation.navigate('Bottom Navigation', payload.id)
-        }
-      })
-        
-    } catch (err) {}
+      )
+        .then((res) => res.json())
+        .then((val) => {
+          setVisible(true);
+          setTimeout(() => {
+            const birdAndCustomer = {
+              birdId: val.id,
+              customerId: val.customerId,
+            };
+            AsyncStorage.setItem("dataId", JSON.stringify(birdAndCustomer));
+            setVisible(false);
+            navigation.navigate("Home");
+          }, 2000);
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [visible, setVisible] = useState(false);
+
+  const ModalPopUp = ({ children, visible }) => {
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+
+    const [showModal, setShowModal] = useState(visible);
+
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
   };
 
   return (
@@ -169,7 +215,6 @@ const AddImage = ({ route }) => {
             marginLeft: 20,
           }}
           onPress={() => {
-            AsyncStorage.removeItem("AcceptToken");
             navigation.goBack();
           }}
         >
@@ -182,121 +227,134 @@ const AddImage = ({ route }) => {
         </TouchableOpacity>
       </Animated.View>
       {/* content add image action sheet and camera */}
-      {BirdName.map((val, index) => {
-        return (
-          <StyledContainer>
-            <LoginPageTitle>
-              Choose image or take a picture of your bird
-            </LoginPageTitle>
-            {/* image selection action sheet */}
-            <View
-              style={{
-                marginTop: 30,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TouchableOpacity onPress={ActionPressSheet}>
-                {image == null ? (
-                  <ImageBackground
-                    source={require("./../Assets/images/beach.png")}
-                    resizeMode="contain"
-                    style={{
-                      height: 155,
-                      width: 155,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                    imageStyle={{
-                      borderRadius: 9999,
-                      borderColor: Colors.primary,
-                      borderWidth: 2,
-                    }}
-                  >
-                    {/* icon camera to edit profile */}
-                    <View
-                      style={{
-                        position: "relative",
-                        marginTop: wp(32.5),
-                        marginLeft: wp(32),
-                      }}
-                    >
-                      <AntDesign name="edit" size={30} />
-                    </View>
-                  </ImageBackground>
-                ) : (
-                  <ImageBackground
-                    source={{ uri: image }}
-                    resizeMode="contain"
-                    style={{
-                      height: 155,
-                      width: 155,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                    imageStyle={{
-                      borderRadius: 9999,
-                      borderColor: Colors.primary,
-                      borderWidth: 2,
-                    }}
-                  >
-                    {/* icon camera to edit profile */}
-                    <View
-                      style={{
-                        position: "relative",
-                        marginTop: wp(32.5),
-                        marginLeft: wp(32),
-                      }}
-                    >
-                      <AntDesign name="edit" size={30} />
-                    </View>
-                  </ImageBackground>
-                )}
-              </TouchableOpacity>
-            </View>
-            {/* button next */}
-            <InnerContainer>
-              <StyledFromArea>
-                <TouchableOpacity
+      <StyledContainer>
+        <LoginPageTitle>
+          Choose image or take a picture of your bird
+        </LoginPageTitle>
+        {/* image selection action sheet */}
+        <View
+          key={index}
+          style={{
+            marginTop: 30,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TouchableOpacity onPress={ActionPressSheet}>
+            {image == null ? (
+              <ImageBackground
+                source={require("./../Assets/images/beach.png")}
+                resizeMode="contain"
+                style={{
+                  height: 155,
+                  width: 155,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                imageStyle={{
+                  borderRadius: 9999,
+                  borderColor: Colors.primary,
+                  borderWidth: 2,
+                }}
+              >
+                {/* icon camera to edit profile */}
+                <View
                   style={{
-                    padding: 15,
-                    backgroundColor: Colors.yellow,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: 10,
-                    height: 50,
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 1,
-                      height: 5,
-                    },
-                    shadowOpacity: 0.32,
-                    shadowRadius: 5.46,
-                    elevation: 15,
-                    overflow: "hidden",
+                    position: "relative",
+                    marginTop: wp(32.5),
+                    marginLeft: wp(32),
                   }}
-                  onPress={onSubmitForm}
                 >
-                  <ButtonText>Next</ButtonText>
-                </TouchableOpacity>
-              </StyledFromArea>
-            </InnerContainer>
-          </StyledContainer>
-        );
-      })}
-    </View>
-  );
-};
-
-export const BackgroundImage = ({ children }) => {
-  return (
-    <View>
-      <ImageBackground
-        source={require("./../Assets/images/leaves.jpg")}
-        style={{ height: "100%" }}
-      />
-      <View style={{ position: "absolute" }}>{children}</View>
+                  <AntDesign name="edit" size={30} />
+                </View>
+              </ImageBackground>
+            ) : (
+              <ImageBackground
+                source={{ uri: image }}
+                resizeMode="contain"
+                style={{
+                  height: 155,
+                  width: 155,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                imageStyle={{
+                  borderRadius: 9999,
+                  borderColor: Colors.primary,
+                  borderWidth: 2,
+                }}
+              >
+                {/* icon camera to edit profile */}
+                <View
+                  style={{
+                    position: "relative",
+                    marginTop: wp(32.5),
+                    marginLeft: wp(32),
+                  }}
+                >
+                  <AntDesign name="edit" size={30} />
+                </View>
+              </ImageBackground>
+            )}
+          </TouchableOpacity>
+        </View>
+        {/* button next */}
+        <InnerContainer>
+          <StyledFromArea>
+            <ModalPopUp visible={visible}>
+              <View
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <LottieView
+                  source={require("./../Assets/loading/check-correct.json")}
+                  autoPlay
+                  loop={true}
+                  style={{
+                    width: 200,
+                    height: 200,
+                  }}
+                  // onAnimationFinish={{}}
+                ></LottieView>
+                <Text
+                  style={{
+                    fontSize: wp(5.5),
+                    color: "#404040",
+                    fontWeight: 800,
+                    textAlign: "center",
+                  }}
+                >
+                  Register Successfully
+                </Text>
+              </View>
+            </ModalPopUp>
+            <TouchableOpacity
+              style={{
+                padding: 15,
+                backgroundColor: Colors.yellow,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 10,
+                height: 50,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 1,
+                  height: 5,
+                },
+                shadowOpacity: 0.32,
+                shadowRadius: 5.46,
+                elevation: 15,
+                overflow: "hidden",
+              }}
+              onPress={onSubmitForm}
+            >
+              <ButtonText>Next</ButtonText>
+            </TouchableOpacity>
+          </StyledFromArea>
+        </InnerContainer>
+      </StyledContainer>
     </View>
   );
 };

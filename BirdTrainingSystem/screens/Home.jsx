@@ -22,7 +22,6 @@ import {
 } from "@expo/vector-icons";
 import { Colors } from "../constants/theme";
 
-import { Category } from "../constants/categories";
 import { Course } from "../constants/viewListCourse";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import BirdDetails from "./BirdDetails";
@@ -47,6 +46,7 @@ import { decode, encode } from "base-64";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as _ from "lodash";
 import Loader from "../Components/Loader";
+import { Picker } from "@react-native-picker/picker";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -61,50 +61,77 @@ const Home = ({ route }) => {
   // loading
   const [loading, setLoading] = useState(false);
 
-  const [payload, setPayload] = useState({});
-
   // data customer bird
-  const [getDataDecode, setDataDecode] = useState({});
   const [dataCustomerBird, setDataCustomerBird] = useState([]);
 
-  // async function getSelectDefault() {
-  //   setLoading(true);
-  //   const getToken = AsyncStorage.getItem("AcceptToken");
-  //   if (getToken) {
-  //     getToken.then((val) => {
-        
-  //     });
-  //   }
-  //   const result = await axios(
-  //     "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
-  //     {
-  //       method: "GET",
-  //       headers: {
-  //         Accept: "application/json",
-  //       },
-  //       params: { customerId: AsyncStorage.getItem("AcceptToken").then(val => {
-  //         JSON.stringify(val)
-  //       }) },
-  //     }
-  //   ).finally(() => {
-  //     setLoading(false);
-  //   });
-  //   if (result.status === 200) {
-  //     console.log(1);
-  //     console.log(result.data)
-  //   }
-  // }
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     getSelectDefault();
-  //   }, [])
-  // );
-
-  // get category data bird species
   const [dataBirdSpecies, setDataBirdSpecies] = useState([]);
 
   const [dataBase, setDataBase] = useState([]);
+
+  async function getSelectDefault() {
+    setLoading(true);
+    // getData storage
+    const getDataId = await AsyncStorage.getItem("dataId").then((val) =>
+      JSON.parse(val)
+    );
+    // fetch data
+    const result = await axios(
+      "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+        params: { customerId: getDataId?.customerId },
+      }
+    ).finally(() => {
+      setLoading(false);
+    });
+    if (result.status === 200) {
+      const getDefault = await AsyncStorage.getItem("defaultBird").then((val) =>
+        JSON.parse(val)
+      );
+      setLoading(true);
+
+      const getBirdSpecies = result.data.filter((params) => {
+        if (getDefault === false) {
+          return JSON.stringify(params.id) === JSON.stringify(getDataId.birdId);
+        } else {
+          return JSON.stringify(params.isDefault).indexOf(true) > -1;
+        }
+      });
+
+      setDataCustomerBird(getBirdSpecies);
+
+      const getSpecies = await axios(
+        "http://13.214.85.41/api/trainingcourse-customer/trainingcourse-species",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+          params: { birdSpeciesId: getBirdSpecies[0].birdSpeciesId },
+        }
+      );
+      if (getSpecies.status === 200) {
+        setDataBase(getSpecies.data);
+        setDataBirdSpecies(getSpecies.data);
+      }
+    }
+    setLoading(false);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getSelectDefault();
+    }, [])
+  );
+
+  const getBirdPicture = dataCustomerBird.map((item) => item.picture);
+  const getBirdName = dataCustomerBird.map((item) => item.name);
+
+  // get category data bird species
+  const [filterCart, setFilterCart] = useState([]);
 
   async function getCategoryFilter() {
     try {
@@ -134,9 +161,6 @@ const Home = ({ route }) => {
     }, [])
   );
 
-  const getBirdPicture = dataCustomerBird.map((item) => item.picture);
-  const getBirdName = dataCustomerBird.map((item) => item.name);
-
   // Refresh cycle
   const [refreshing, setRefreshing] = useState(false);
 
@@ -155,8 +179,6 @@ const Home = ({ route }) => {
   const [search, setSearch] = useState("");
 
   const [colorSelect, setColorSelect] = useState(null);
-
-  const [filterCart, setFilterCart] = useState([]);
 
   const onSearch = (text) => {
     if (text == "") {
@@ -200,18 +222,7 @@ const Home = ({ route }) => {
             }}
           >
             {/* Bird picture */}
-            {getBirdPicture == null ? (
-              <Image
-                source={require("./../Assets/images/beach.png")}
-                style={{
-                  height: wp(12),
-                  width: wp(12),
-                  borderRadius: wp(12),
-                  borderColor: Colors.primary,
-                  borderWidth: 1,
-                }}
-              />
-            ) : (
+            {getBirdPicture && (
               <Image
                 source={{ uri: getBirdPicture[0] }}
                 style={{
@@ -288,54 +299,61 @@ const Home = ({ route }) => {
             <Text style={style.textStyle}>Categories</Text>
             <View style={{ marginHorizontal: 10 }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {filterCart.map((value, index) => {
-                  return (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setColorSelect(index);
-                        onFilterSelect(value.name);
-                      }}
-                      key={index}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginVertical: 10,
-                      }}
-                    >
-                      <View
+                {filterCart
+                  .sort((a, b) => {
+                    if (a.id < b.id) return -1;
+                    if (a.id > b.id) return 1;
+                    return 0;
+                  })
+                  .map((value, index) => {
+                    return (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setColorSelect(index);
+                          onFilterSelect(value.name);
+                        }}
+                        key={index}
                         style={{
-                          borderRadius: 24,
-                          width: wp(22),
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
-                        <Text
+                        <View
                           style={{
-                            textAlign: "center",
-                            color:
-                              index === (colorSelect || 0)
-                                ? Colors.red
-                                : "#404040",
-                            fontWeight: 600,
-                            fontSize: wp(4),
+                            marginTop: 8,
+                            width: wp(25),
                           }}
                         >
-                          {value.name}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          marginTop: 5,
-                          borderWidth: 4,
-                          borderRadius: 999,
-                          borderColor:
-                            index === (colorSelect || 0)
-                              ? Colors.red
-                              : Colors.offWhite,
-                        }}
-                      ></View>
-                    </TouchableOpacity>
-                  );
-                })}
+                          <Text
+                            style={{
+                              textAlign: "center",
+                              color:
+                                index === (colorSelect || 0)
+                                  ? Colors.red
+                                  : "#404040",
+
+                              fontWeight:
+                                index === (colorSelect || 0) ? 700 : 500,
+                              fontSize: wp(4),
+                            }}
+                          >
+                            {value.name}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            marginTop: 5,
+                            borderWidth: 4,
+                            borderRadius: 999,
+                            borderColor:
+                              index === (colorSelect || 0)
+                                ? Colors.red
+                                : Colors.offWhite,
+                          }}
+                        ></View>
+                      </TouchableOpacity>
+                    );
+                  })}
               </ScrollView>
             </View>
           </View>
@@ -435,7 +453,7 @@ const Home = ({ route }) => {
                           marginRight: 10,
                         }}
                       >
-                        {val.rating} lesson
+                        {val.birdSkills.length} New Skills
                       </Text>
                       <View
                         style={{
@@ -482,7 +500,8 @@ const style = StyleSheet.create({
   textStyle: {
     marginHorizontal: 15,
     fontSize: wp(5.5),
-    fontWeight: "600",
+    letterSpacing: 0.2,
+    fontWeight: "800",
     paddingLeft: 5,
     color: "#404040",
   },

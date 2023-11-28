@@ -1,9 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import { useCallback } from "react";
-import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
+import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabNavigation from "../navigation/BottomTabNavigation";
 import {
@@ -17,15 +13,11 @@ import {
   SeeAll,
   TrainingReport,
   SwitchAccount,
+  Certificate,
 } from "../screens";
 import Register from "../navigation/Register";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
-import { jwtDecode } from "jwt-decode";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import { decode, encode } from "base-64";
-import AppLoading from 'expo-app-loading';
-
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -38,23 +30,14 @@ if (!global.atob) {
 export default App = () => {
   const Stack = createNativeStackNavigator();
   const [getDataBird, setBirdData] = useState([]);
-  // const { fontLoaded } = useFonts({
-  //   regular: require("../Assets/fonts/OpenSans-Medium.ttf"),
-  //   light: require("../Assets/fonts/OpenSans-Light.ttf"),
-  //   bold: require("../Assets/fonts/OpenSans-Bold.ttf"),
-  // });
-
-  // const onLayoutRootView = useCallback(async () => {
-  //   if (fontLoaded) await SplashScreen.hideAsync();
-  // }, fontLoaded);
-
-  // if (!fontLoaded) return null;
+  const pubStripeKey =
+    "pk_test_51OARbWBE05GWCL9eWy2vDqXNLR4L9M1YVtkVExQSkqqQYO8hvUGGjawadvsqIAcXuKX6Aw4tGvqUJQHm2Bf6xNZo00wJQ7LwMh";
 
   return (
     <ActionSheetProvider>
       <Stack.Navigator initialRouteName="Welcome">
         <Stack.Screen
-          name="Bottom Navigation"
+          name="BottomTabNavigation"
           component={BottomTabNavigation}
           options={{
             headerShown: false,
@@ -148,7 +131,7 @@ export default App = () => {
           name="SeeAll"
           component={SeeAll}
           options={{
-            headerShown: true,
+            headerShown: false,
             gestureEnabled: true,
             gestureDirection: "column",
             CardStyleInterpolation: "linear",
@@ -170,6 +153,17 @@ export default App = () => {
           component={SwitchAccount}
           options={{
             headerShown: false,
+            gestureEnabled: true,
+            gestureDirection: "column",
+            CardStyleInterpolation: "linear",
+          }}
+        />
+
+        <Stack.Screen
+          name="Certificate"
+          component={Certificate}
+          options={{
+            headerShown: true,
             gestureEnabled: true,
             gestureDirection: "column",
             CardStyleInterpolation: "linear",

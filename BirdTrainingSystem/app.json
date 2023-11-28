@@ -13,8 +13,10 @@
         }
       ]
     ],
-    "name": "BirdTrainingSystem",
+    "name": "Thesis-Academy",
     "slug": "thesis-birdtraining",
+    "icon": "././Assets/images/02-15.png",
+    "version": "1.0.0",
     "extra": {
       "router": {
         "origin": false
@@ -25,11 +27,12 @@
     },
     "owner": "thonghd2",
     "android": {
-    "package": "com.example.mapsdemo",
-    "config": {
-      "googleMaps": {
-      "apiKey": "AIzaSyBjUrLfuYv0VjlcBd9AYqT-OqUoDnYe5iA"
-       }
+      "package": "com.thonghd2.thesisbirdtraining",
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBjUrLfuYv0VjlcBd9AYqT-OqUoDnYe5iA"
+        }
       }
     }
   }

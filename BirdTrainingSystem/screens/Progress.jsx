@@ -24,12 +24,12 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors } from "../constants/theme";
 import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Category } from "../constants/categories";
 import { find, includes } from "lodash";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { isMoment } from "moment";
+import moment, { isMoment } from "moment";
 import axios from "axios";
 import Loader from "../Components/Loader";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Progress = ({ route }) => {
   const navigation = useNavigation();
@@ -49,6 +49,11 @@ const Progress = ({ route }) => {
   async function getCustomerBird() {
     try {
       setLoading(true);
+      // getData storage
+      const getDataId = await AsyncStorage.getItem("dataId").then((val) =>
+        JSON.parse(val)
+      );
+      // fetching
       const response = await axios(
         "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
         {
@@ -56,22 +61,32 @@ const Progress = ({ route }) => {
           headers: {
             Accept: "application/json",
           },
-          params: { customerId: route.params.customerId },
+          params: { customerId: getDataId?.customerId },
         }
       ).finally(() => {
         setLoading(false);
       });
       if (response) {
+
+        const getDefault = await AsyncStorage.getItem("defaultBird").then(val => JSON.parse(val))
+  
+        setLoading(true);
+  
         const dataFilter = response.data.filter((params) => {
-          return (
-            JSON.stringify(params.birdSpeciesId).indexOf(route.params.val) > -1
-          );
+          if (getDefault === false) {
+           return  JSON.stringify(params.id) === JSON.stringify(getDataId.birdId);
+          } else {
+            return JSON.stringify(params.isDefault).indexOf(true) > -1;
+          }
         });
 
+
         setDataCustomerBird(dataFilter);
+
         async function getRegisteredCourse() {
+          setLoading(true);
           try {
-            const res = await axios(
+            const result = await axios(
               "http://13.214.85.41/api/trainingcourse-customer/registered-birdtrainingcourse",
               {
                 method: "get",
@@ -79,20 +94,21 @@ const Progress = ({ route }) => {
                   Accept: "application/json",
                 },
                 params: {
-                  birdId: response.data[0].id,
-                  customerId: response.data[0].customerId,
+                  birdId: dataFilter[0].id,
+                  customerId: dataFilter[0].customerId,
                 },
               }
             );
 
-            if (res) {
-              setDataCourseRegister(res.data);
+            if (result) {
+              setDataCourseRegister(result.data);
             } else {
-              alert(`error mess: ${res}`);
+              alert(`error mess: ${result}`);
             }
           } catch (err) {
             alert(err);
           }
+          setLoading(false);
         }
         getRegisteredCourse();
         setLoading(false);
@@ -108,8 +124,9 @@ const Progress = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       getCustomerBird();
-    }, [route.params])
+    }, [])
   );
+
   const getBirdPicture = dataCustomerBird.map((item) => item.picture);
   const getBirdName = dataCustomerBird.map((item) => item.name);
 
@@ -122,6 +139,26 @@ const Progress = ({ route }) => {
       getCustomerBird();
     }, 1000);
   };
+
+  const getCourseRegistered = getDataCourseRegister.filter((par) => {
+    return JSON.stringify(par.status).indexOf("Registered") > -1;
+  });
+
+  const getCourseConfirm = getDataCourseRegister.filter((res) => {
+    return JSON.stringify(res.status).indexOf("Confirmed") > -1;
+  });
+
+  const getCourseTraining = getDataCourseRegister.filter((par) => {
+    return par.status === "Training";
+  });
+
+  const getCourseCancel = getDataCourseRegister.filter((par) => {
+    return JSON.stringify(par.status).indexOf("Cancel") > -1;
+  });
+
+  const getCourseDone = getDataCourseRegister.filter((par) => {
+    return JSON.stringify(par.status).indexOf("TrainingDone") > -1;
+  });
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -191,166 +228,237 @@ const Progress = ({ route }) => {
               >
                 <Text style={style.textStyle}>Registered</Text>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("SeeAll", {
-                      val: getDataCourseRegister,
-                      status: "Registered",
-                    });
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 20,
+                {getCourseRegistered.length === 0 ? null : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("SeeAll", {
+                        val: getCourseRegistered,
+                        getTitle: "Registered",
+                      });
                     }}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: wp(4),
-                        fontWeight: "500",
-                        paddingLeft: 5,
-                        color: "green",
-                      }}
-                    >
-                      See all
-                    </Text>
-                    <MaterialIcons
-                      name="keyboard-arrow-right"
-                      size={wp(6)}
-                      color={"green"}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {getDataCourseRegister.map((value, index) => {
-                return value.status == "Registered" ? (
-                  <View key={value.id}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("DetailsOnGoing", {});
-                      }}
-                      style={{
-                        marginHorizontal: 10,
-                        display: "flex",
+                        flexDirection: "row",
                         alignItems: "center",
-                        marginVertical: 10,
+                        justifyContent: "center",
+                        marginRight: 20,
                       }}
                     >
-                      <ImageBackground
-                        source={{ uri: value.trainingCoursePicture }}
-                        resizeMethod="auto"
-                        borderRadius={18}
+                      <Text
                         style={{
-                          width: wp(60),
-                          height: hp(20),
-                          justifyContent: "space-between",
+                          fontSize: wp(4),
+                          fontWeight: "500",
+                          paddingLeft: 5,
+                          color: "green",
                         }}
                       >
-                        <LinearGradient
-                          colors={["transparent", "rgba(0,0,0,0.8)"]}
-                          start={{ x: 0.5, y: 0 }}
-                          end={{ x: 0.5, y: 1 }}
+                        See all
+                      </Text>
+                      <MaterialIcons
+                        name="keyboard-arrow-right"
+                        size={wp(6)}
+                        color={"green"}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {getCourseRegistered.length === 0 ? (
+              <View style={{ paddingBottom: 30 }}>
+                <View
+                  style={{
+                    borderColor: Colors.grey,
+                    width: "90%",
+                    height: hp(8),
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    marginVertical: 10,
+                    marginHorizontal: 20,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      flexShrink: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(4),
+                      width: "auto",
+                      fontWeight: "700",
+                      color: "#404040",
+                      textAlign: "center",
+                    }}
+                  >
+                    You don't have any Course Registered.
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {getCourseRegistered.map((value, index) => {
+                  return (
+                    <View key={value.id}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("DetailsOnGoing", {
+                            value,
+                          });
+                        }}
+                        style={{
+                          marginHorizontal: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          marginVertical: 10,
+                        }}
+                      >
+                        <ImageBackground
+                          source={{ uri: value.trainingCoursePicture }}
+                          resizeMethod="auto"
+                          borderRadius={18}
                           style={{
-                            position: "absolute",
-                            bottom: 0,
-                            width: "100%",
-                            height: hp(20),
-                            borderBottomLeftRadius: 18,
-                            borderBottomRightRadius: 18,
-                          }}
-                        />
-                        <View
-                          style={{
-                            alignItems: "flex-start",
-                            marginTop: 10,
+                            width: wp(65),
+                            height: hp(23),
+                            justifyContent: "space-between",
                           }}
                         >
+                          <LinearGradient
+                            colors={["transparent", "rgba(0,0,0,0.8)"]}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              width: "100%",
+                              height: hp(20),
+                              borderBottomLeftRadius: 18,
+                              borderBottomRightRadius: 18,
+                            }}
+                          />
                           <View
                             style={{
-                              flexDirection: "column",
-                              justifyContent: "center",
                               alignItems: "flex-start",
-                              paddingLeft: 15,
+                              marginTop: 10,
                             }}
                           >
                             <View
                               style={{
-                                borderWidth: 1,
-                                borderRadius: 12,
-                                alignItems: "center",
+                                flexDirection: "column",
                                 justifyContent: "center",
-                                padding: 1,
-                                paddingHorizontal: 5,
-                                height: "auto",
-                                borderColor: Colors.white,
-                                width: "auto",
+                                alignItems: "flex-start",
+                                paddingLeft: 15,
                               }}
                             >
-                              <Text style={{ color: "white" }}>
-                                {value.status}
+                              <View
+                                style={{
+                                  borderWidth: 1,
+                                  borderRadius: 12,
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: 1,
+                                  paddingHorizontal: 5,
+                                  height: "auto",
+                                  borderColor: Colors.white,
+                                  width: "auto",
+                                }}
+                              >
+                                <Text style={{ color: "white" }}>
+                                  {value.status}
+                                </Text>
+                              </View>
+                              <Text
+                                style={{
+                                  marginTop: 5,
+                                  flexShrink: 1,
+                                  flexWrap: "wrap",
+                                  maxWidth: wp(50),
+                                  fontSize: wp(5),
+                                  fontWeight: "800",
+                                  color: "white",
+                                }}
+                              >
+                                {value.trainingCourseTitle}
                               </Text>
                             </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginHorizontal: 20,
+                              marginVertical: 15,
+                            }}
+                          >
+                            <View style={{ flexDirection: "column" }}>
+                              <Text
+                                style={{
+                                  fontSize: wp(4),
+                                  fontWeight: "500",
+                                  color: "white",
+                                }}
+                              >
+                                Registered Date
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: wp(3.5),
+                                  fontWeight: "400",
+                                  color: "white",
+                                }}
+                              >
+                                {moment(
+                                  value.registeredDate,
+                                  "DDMMYYYY"
+                                ).format("DD/MM/YYYY")}
+                              </Text>
+                            </View>
+                            <View
+                              style={{
+                                borderWidth: 1,
+                                backgroundColor: "white",
+                                height: wp(8),
+                                width: wp(1),
+                                marginHorizontal: 10,
+                              }}
+                            />
                             <Text
                               style={{
-                                marginTop: 5,
-                                flexShrink: 1,
-                                flexWrap: "wrap",
-                                maxWidth: wp(50),
-                                fontSize: wp(5),
-                                fontWeight: "800",
+                                fontSize: wp(4),
+                                fontWeight: "600",
                                 color: "white",
                               }}
                             >
-                              {value.trainingCourseTitle}
+                              {value.totalSlot} Slot
                             </Text>
                           </View>
-                        </View>
-
+                        </ImageBackground>
                         <View
                           style={{
                             flexDirection: "row",
-                            marginHorizontal: 20,
-                            marginVertical: 15,
+                            alignItems: "center",
                           }}
                         >
-                          <Text
+                          <View
                             style={{
-                              fontSize: wp(4),
-                              fontWeight: "600",
-                              color: "white",
+                              marginTop: 10,
+                              width: wp(4),
+                              height: wp(1),
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              marginHorizontal: 1.5,
                             }}
-                          >
-                            {value.totalSlot} total Slot
-                          </Text>
+                          ></View>
                         </View>
-                      </ImageBackground>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginTop: 10,
-                            width: wp(4),
-                            height: wp(1),
-                            borderRadius: 10,
-                            flexDirection: "row",
-                            marginHorizontal: 1.5,
-                          }}
-                        ></View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                ) : null;
-              })}
-            </ScrollView>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
             {/* Confirmed */}
             <View style={{ marginTop: 5 }}>
               <View
@@ -361,169 +469,250 @@ const Progress = ({ route }) => {
                 }}
               >
                 <Text style={style.textStyle}>Confirmed</Text>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("SeeAll", {
-                      val: getDataCourseRegister,
-                      status: "Confirmed",
-                    });
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 20,
+                {getCourseConfirm.length === 0 ? null : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("SeeAll", {
+                        val: getCourseConfirm,
+                        getTitle: "Confirmed",
+                      });
                     }}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: wp(4),
-                        fontWeight: "500",
-                        paddingLeft: 5,
-                        color: "green",
-                      }}
-                    >
-                      See all
-                    </Text>
-                    <MaterialIcons
-                      name="keyboard-arrow-right"
-                      size={wp(6)}
-                      color={"green"}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {getDataCourseRegister.map((value, index) => {
-                return value.status == "Confirmed" ? (
-                  <View key={value.id}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("DetailsOnGoing", {
-                          params: getDataCourseRegister,
-                        });
-                      }}
-                      style={{
-                        marginHorizontal: 10,
-                        display: "flex",
+                        flexDirection: "row",
                         alignItems: "center",
-                        marginVertical: 10,
+                        justifyContent: "center",
+                        marginRight: 20,
                       }}
                     >
-                      <ImageBackground
-                        source={{ uri: value.trainingCoursePicture }}
-                        resizeMethod="auto"
-                        borderRadius={18}
+                      <Text
                         style={{
-                          width: wp(60),
-                          height: hp(20),
-                          justifyContent: "space-between",
+                          fontSize: wp(4),
+                          fontWeight: "500",
+                          paddingLeft: 5,
+                          color: "green",
                         }}
                       >
-                        <LinearGradient
-                          colors={["transparent", "rgba(0,0,0,0.8)"]}
-                          start={{ x: 0.5, y: 0 }}
-                          end={{ x: 0.5, y: 1 }}
+                        See all
+                      </Text>
+                      <MaterialIcons
+                        name="keyboard-arrow-right"
+                        size={wp(6)}
+                        color={"green"}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            {getCourseConfirm.length === 0 ? (
+              <View style={{ paddingBottom: 30 }}>
+                <View
+                  style={{
+                    borderColor: Colors.grey,
+                    width: "90%",
+                    height: hp(13),
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    marginVertical: 10,
+                    marginHorizontal: 20,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      flexShrink: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(4),
+                      width: "auto",
+                      fontWeight: "700",
+                      color: "red",
+                      marginBottom: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    Stand by for server Assigned and Confirm Trainer for your
+                    Bird
+                  </Text>
+                  <Text
+                    style={{
+                      flexShrink: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(4),
+                      width: "auto",
+                      fontWeight: "700",
+                      color: "#404040",
+                      marginBottom: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    Sorry for this inconvenience !!
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {getCourseConfirm.map((value, index) => {
+                  return (
+                    <View key={value.id}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("DetailsOnGoing", { value });
+                        }}
+                        style={{
+                          marginHorizontal: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          marginVertical: 10,
+                        }}
+                      >
+                        <ImageBackground
+                          source={{ uri: value.trainingCoursePicture }}
+                          resizeMethod="auto"
+                          borderRadius={18}
                           style={{
-                            position: "absolute",
-                            bottom: 0,
-                            width: "100%",
-                            height: hp(20),
-                            borderBottomLeftRadius: 18,
-                            borderBottomRightRadius: 18,
-                          }}
-                        />
-                        <View
-                          style={{
-                            alignItems: "flex-start",
-                            marginTop: 10,
+                            width: wp(65),
+                            height: hp(23),
+                            justifyContent: "space-between",
                           }}
                         >
+                          <LinearGradient
+                            colors={["transparent", "rgba(0,0,0,0.8)"]}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              width: "100%",
+                              height: hp(20),
+                              borderBottomLeftRadius: 18,
+                              borderBottomRightRadius: 18,
+                            }}
+                          />
                           <View
                             style={{
-                              flexDirection: "column",
-                              justifyContent: "center",
                               alignItems: "flex-start",
-                              paddingLeft: 15,
+                              marginTop: 10,
                             }}
                           >
                             <View
                               style={{
-                                borderWidth: 1,
-                                borderRadius: 12,
-                                alignItems: "center",
+                                flexDirection: "column",
                                 justifyContent: "center",
-                                padding: 1,
-                                paddingHorizontal: 5,
-                                height: "auto",
-                                borderColor: Colors.white,
-                                width: "auto",
+                                alignItems: "flex-start",
+                                paddingLeft: 15,
                               }}
                             >
-                              <Text style={{ color: "white" }}>
-                                {value.status}
+                              <View
+                                style={{
+                                  borderWidth: 1,
+                                  borderRadius: 12,
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: 1,
+                                  paddingHorizontal: 5,
+                                  height: "auto",
+                                  borderColor: Colors.white,
+                                  width: "auto",
+                                }}
+                              >
+                                <Text style={{ color: "white" }}>
+                                  {value.status}
+                                </Text>
+                              </View>
+                              <Text
+                                style={{
+                                  marginTop: 5,
+                                  flexShrink: 1,
+                                  flexWrap: "wrap",
+                                  maxWidth: wp(50),
+                                  fontSize: wp(5),
+                                  fontWeight: "800",
+                                  color: "white",
+                                }}
+                              >
+                                {value.trainingCourseTitle}
                               </Text>
                             </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginHorizontal: 20,
+                              marginVertical: 15,
+                            }}
+                          >
+                            <View style={{ flexDirection: "column" }}>
+                              <Text
+                                style={{
+                                  fontSize: wp(4),
+                                  fontWeight: "500",
+                                  color: "white",
+                                }}
+                              >
+                                Registered Date
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: wp(3.5),
+                                  fontWeight: "400",
+                                  color: "white",
+                                }}
+                              >
+                                {moment(
+                                  value.registeredDate,
+                                  "DDMMYYYY"
+                                ).format("DD/MM/YYYY")}
+                              </Text>
+                            </View>
+                            <View
+                              style={{
+                                borderWidth: 1,
+                                backgroundColor: "white",
+                                height: wp(8),
+                                width: wp(1),
+                                marginHorizontal: 10,
+                              }}
+                            />
                             <Text
                               style={{
-                                marginTop: 5,
-                                flexShrink: 1,
-                                flexWrap: "wrap",
-                                maxWidth: wp(50),
-                                fontSize: wp(5),
-                                fontWeight: "800",
+                                fontSize: wp(4),
+                                fontWeight: "600",
                                 color: "white",
                               }}
                             >
-                              {value.trainingCourseTitle}
+                              {value.totalSlot} Slot
                             </Text>
                           </View>
-                        </View>
-
+                        </ImageBackground>
                         <View
                           style={{
                             flexDirection: "row",
-                            marginHorizontal: 20,
-                            marginVertical: 15,
+                            alignItems: "center",
                           }}
                         >
-                          <Text
+                          <View
                             style={{
-                              fontSize: wp(4),
-                              fontWeight: "600",
-                              color: "white",
+                              marginTop: 10,
+                              width: wp(4),
+                              height: wp(1),
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              marginHorizontal: 1.5,
                             }}
-                          >
-                            {value.totalSlot} total Slot
-                          </Text>
+                          ></View>
                         </View>
-                      </ImageBackground>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginTop: 10,
-                            width: wp(4),
-                            height: wp(1),
-                            borderRadius: 10,
-                            flexDirection: "row",
-                            marginHorizontal: 1.5,
-                          }}
-                        ></View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                ) : null;
-              })}
-            </ScrollView>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
             {/* Training */}
             <View style={{ marginTop: 5 }}>
               <View
@@ -534,169 +723,469 @@ const Progress = ({ route }) => {
                 }}
               >
                 <Text style={style.textStyle}>Training</Text>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("SeeAll", {
-                      val: getDataCourseRegister,
-                      status: "Training",
-                    });
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 20,
+                {getCourseTraining.length === 0 ? null : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("SeeAll", {
+                        val: getCourseTraining,
+                        getTitle: "Training",
+                      });
                     }}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontSize: wp(4),
-                        fontWeight: "500",
-                        paddingLeft: 5,
-                        color: "green",
-                      }}
-                    >
-                      See all
-                    </Text>
-                    <MaterialIcons
-                      name="keyboard-arrow-right"
-                      size={wp(6)}
-                      color={"green"}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {getDataCourseRegister.map((value, index) => {
-                return value.status == "Training" ? (
-                  <View key={value.id}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("DetailsOnGoing", {
-                          params: getDataCourseRegister,
-                        });
-                      }}
-                      style={{
-                        marginHorizontal: 10,
-                        display: "flex",
+                        flexDirection: "row",
                         alignItems: "center",
-                        marginVertical: 10,
+                        justifyContent: "center",
+                        marginRight: 20,
                       }}
                     >
-                      <ImageBackground
-                        source={{ uri: value.trainingCoursePicture }}
-                        resizeMethod="auto"
-                        borderRadius={18}
+                      <Text
                         style={{
-                          width: wp(60),
-                          height: hp(20),
-                          justifyContent: "space-between",
+                          fontSize: wp(4),
+                          fontWeight: "500",
+                          paddingLeft: 5,
+                          color: "green",
                         }}
                       >
-                        <LinearGradient
-                          colors={["transparent", "rgba(0,0,0,0.8)"]}
-                          start={{ x: 0.5, y: 0 }}
-                          end={{ x: 0.5, y: 1 }}
+                        See all
+                      </Text>
+                      <MaterialIcons
+                        name="keyboard-arrow-right"
+                        size={wp(6)}
+                        color={"green"}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            {getCourseTraining.length === 0 ? (
+              <View
+                style={{
+                  borderColor: Colors.grey,
+                  width: "90%",
+                  height: hp(8),
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  marginVertical: 10,
+                  marginHorizontal: 20,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    flexShrink: 1,
+                    flexWrap: "wrap",
+                    fontSize: wp(4),
+                    width: "auto",
+                    fontWeight: "700",
+                    color: "#404040",
+                    textAlign: "center",
+                  }}
+                >
+                  Your's Bird is not apply into any courses
+                </Text>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {getCourseTraining.map((value, index) => {
+                  return (
+                    <View key={value.id}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("DetailsOnGoing", { value });
+                        }}
+                        style={{
+                          marginHorizontal: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          marginVertical: 10,
+                        }}
+                      >
+                        <ImageBackground
+                          source={{ uri: value.trainingCoursePicture }}
+                          resizeMethod="auto"
+                          borderRadius={18}
                           style={{
-                            position: "absolute",
-                            bottom: 0,
-                            width: "100%",
-                            height: hp(20),
-                            borderBottomLeftRadius: 18,
-                            borderBottomRightRadius: 18,
-                          }}
-                        />
-                        <View
-                          style={{
-                            alignItems: "flex-start",
-                            marginTop: 10,
+                            width: wp(65),
+                            height: hp(23),
+                            justifyContent: "space-between",
                           }}
                         >
+                          <LinearGradient
+                            colors={["transparent", "rgba(0,0,0,0.8)"]}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              width: "100%",
+                              height: hp(20),
+                              borderBottomLeftRadius: 18,
+                              borderBottomRightRadius: 18,
+                            }}
+                          />
                           <View
                             style={{
-                              flexDirection: "column",
-                              justifyContent: "center",
                               alignItems: "flex-start",
-                              paddingLeft: 15,
+                              marginTop: 10,
                             }}
                           >
                             <View
                               style={{
-                                borderWidth: 1,
-                                borderRadius: 12,
-                                alignItems: "center",
+                                flexDirection: "column",
                                 justifyContent: "center",
-                                padding: 1,
-                                paddingHorizontal: 5,
-                                height: "auto",
-                                borderColor: Colors.white,
-                                width: "auto",
+                                alignItems: "flex-start",
+                                paddingLeft: 15,
                               }}
                             >
-                              <Text style={{ color: "white" }}>
-                                {value.status}
+                              <View
+                                style={{
+                                  borderWidth: 1,
+                                  borderRadius: 12,
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: 1,
+                                  paddingHorizontal: 5,
+                                  height: "auto",
+                                  borderColor: Colors.white,
+                                  width: "auto",
+                                }}
+                              >
+                                <Text style={{ color: "white" }}>
+                                  {value.status}
+                                </Text>
+                              </View>
+                              <Text
+                                style={{
+                                  marginTop: 5,
+                                  flexShrink: 1,
+                                  flexWrap: "wrap",
+                                  maxWidth: wp(50),
+                                  fontSize: wp(5),
+                                  fontWeight: "800",
+                                  color: "white",
+                                }}
+                              >
+                                {value.trainingCourseTitle}
                               </Text>
                             </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginHorizontal: 20,
+                              marginVertical: 15,
+                            }}
+                          >
+                            <View style={{ flexDirection: "column" }}>
+                              <Text
+                                style={{
+                                  fontSize: wp(4),
+                                  fontWeight: "500",
+                                  color: "white",
+                                }}
+                              >
+                                Registered Date
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: wp(3.5),
+                                  fontWeight: "400",
+                                  color: "white",
+                                }}
+                              >
+                                {moment(
+                                  value.registeredDate,
+                                  "DDMMYYYY"
+                                ).format("DD/MM/YYYY")}
+                              </Text>
+                            </View>
+                            <View
+                              style={{
+                                borderWidth: 1,
+                                backgroundColor: "white",
+                                height: wp(8),
+                                width: wp(1),
+                                marginHorizontal: 10,
+                              }}
+                            />
                             <Text
                               style={{
-                                marginTop: 5,
-                                flexShrink: 1,
-                                flexWrap: "wrap",
-                                maxWidth: wp(50),
-                                fontSize: wp(5),
-                                fontWeight: "800",
+                                fontSize: wp(4),
+                                fontWeight: "600",
                                 color: "white",
                               }}
                             >
-                              {value.trainingCourseTitle}
+                              {value.totalSlot} Slot
                             </Text>
                           </View>
-                        </View>
-
+                        </ImageBackground>
                         <View
                           style={{
                             flexDirection: "row",
-                            marginHorizontal: 20,
-                            marginVertical: 15,
+                            alignItems: "center",
                           }}
                         >
-                          <Text
+                          <View
                             style={{
-                              fontSize: wp(4),
-                              fontWeight: "600",
-                              color: "white",
+                              marginTop: 10,
+                              width: wp(4),
+                              height: wp(1),
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              marginHorizontal: 1.5,
                             }}
-                          >
-                            {value.totalSlot} total Slot
-                          </Text>
+                          ></View>
                         </View>
-                      </ImageBackground>
-                      <View
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            {/* Training Done */}
+            <View style={{ marginTop: 5 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={style.textStyle}>Training Done</Text>
+
+                {getCourseDone.length === 0 ? null : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("SeeAll", {
+                        val: getCourseDone,
+                        getTitle: "Training Done",
+                      });
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 20,
+                      }}
+                    >
+                      <Text
                         style={{
-                          flexDirection: "row",
-                          alignItems: "center",
+                          fontSize: wp(4),
+                          fontWeight: "500",
+                          paddingLeft: 5,
+                          color: "green",
                         }}
                       >
+                        See all
+                      </Text>
+                      <MaterialIcons
+                        name="keyboard-arrow-right"
+                        size={wp(6)}
+                        color={"green"}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            {getCourseDone.length === 0 ? (
+              <View
+                style={{
+                  borderColor: Colors.grey,
+                  width: "90%",
+                  height: hp(8),
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  marginVertical: 10,
+                  marginHorizontal: 20,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    flexShrink: 1,
+                    flexWrap: "wrap",
+                    fontSize: wp(4),
+                    width: "auto",
+                    fontWeight: "700",
+                    color: "#404040",
+                    textAlign: "center",
+                  }}
+                >
+                  Your's Bird is not training into any courses
+                </Text>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {getCourseDone.map((value, index) => {
+                  return (
+                    <View key={value.id}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("DetailsOnGoing", { value });
+                        }}
+                        style={{
+                          marginHorizontal: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          marginVertical: 10,
+                        }}
+                      >
+                        <ImageBackground
+                          source={{ uri: value.trainingCoursePicture }}
+                          resizeMethod="auto"
+                          borderRadius={18}
+                          style={{
+                            width: wp(65),
+                            height: hp(23),
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <LinearGradient
+                            colors={["transparent", "rgba(0,0,0,0.8)"]}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              width: "100%",
+                              height: hp(20),
+                              borderBottomLeftRadius: 18,
+                              borderBottomRightRadius: 18,
+                            }}
+                          />
+                          <View
+                            style={{
+                              alignItems: "flex-start",
+                              marginTop: 10,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                alignItems: "flex-start",
+                                paddingLeft: 15,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  borderWidth: 1,
+                                  borderRadius: 12,
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: 1,
+                                  paddingHorizontal: 5,
+                                  height: "auto",
+                                  borderColor: Colors.white,
+                                  width: "auto",
+                                }}
+                              >
+                                <Text style={{ color: "white" }}>
+                                  {value.status}
+                                </Text>
+                              </View>
+                              <Text
+                                style={{
+                                  marginTop: 5,
+                                  flexShrink: 1,
+                                  flexWrap: "wrap",
+                                  maxWidth: wp(50),
+                                  fontSize: wp(5),
+                                  fontWeight: "800",
+                                  color: "white",
+                                }}
+                              >
+                                {value.trainingCourseTitle}
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginHorizontal: 20,
+                              marginVertical: 15,
+                            }}
+                          >
+                            <View style={{ flexDirection: "column" }}>
+                              <Text
+                                style={{
+                                  fontSize: wp(4),
+                                  fontWeight: "500",
+                                  color: "white",
+                                }}
+                              >
+                                Registered Date
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: wp(3.5),
+                                  fontWeight: "400",
+                                  color: "white",
+                                }}
+                              >
+                                {moment(
+                                  value.registeredDate,
+                                  "DDMMYYYY"
+                                ).format("DD/MM/YYYY")}
+                              </Text>
+                            </View>
+                            <View
+                              style={{
+                                borderWidth: 1,
+                                backgroundColor: "white",
+                                height: wp(8),
+                                width: wp(1),
+                                marginHorizontal: 10,
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: wp(4),
+                                fontWeight: "600",
+                                color: "white",
+                              }}
+                            >
+                              {value.totalSlot} Slot
+                            </Text>
+                          </View>
+                        </ImageBackground>
                         <View
                           style={{
-                            marginTop: 10,
-                            width: wp(4),
-                            height: wp(1),
-                            borderRadius: 10,
                             flexDirection: "row",
-                            marginHorizontal: 1.5,
+                            alignItems: "center",
                           }}
-                        ></View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                ) : null;
-              })}
-            </ScrollView>
+                        >
+                          <View
+                            style={{
+                              marginTop: 10,
+                              width: wp(4),
+                              height: wp(1),
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              marginHorizontal: 1.5,
+                            }}
+                          ></View>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
             {/* Cancel */}
             <View style={{ marginTop: 5 }}>
               <View
@@ -707,266 +1196,237 @@ const Progress = ({ route }) => {
                 }}
               >
                 <Text style={style.textStyle}>Cancel</Text>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("SeeAll", {
-                      val: getDataCourseRegister,
-                      status: "Cancel",
-                    });
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 20,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: wp(4),
-                        fontWeight: "500",
-                        paddingLeft: 5,
-                        color: "green",
-                      }}
-                    >
-                      See all
-                    </Text>
-                    <MaterialIcons
-                      name="keyboard-arrow-right"
-                      size={wp(6)}
-                      color={"green"}
-                    />
-                  </View>
-                </TouchableOpacity>
               </View>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {getDataCourseRegister.map((value, index) => {
-                return value.status == "Cancel" ? (
-                  <View key={value.id}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        navigation.navigate("DetailsOnGoing", {
-                          params: getDataCourseRegister,
-                        });
-                      }}
-                      style={{
-                        marginHorizontal: 10,
-                        display: "flex",
-                        alignItems: "center",
-                        marginVertical: 10,
-                      }}
-                    >
-                      <ImageBackground
-                        source={{ uri: value.trainingCoursePicture }}
-                        resizeMethod="auto"
-                        borderRadius={18}
+
+            {getCourseCancel.length === 0 ? (
+              <View style={{ paddingBottom: 30 }}>
+                <View
+                  style={{
+                    borderColor: Colors.grey,
+                    width: "90%",
+                    height: hp(8),
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    marginVertical: 10,
+                    marginHorizontal: 20,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      flexShrink: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(4),
+                      width: "auto",
+                      fontWeight: "700",
+                      color: "#404040",
+                      textAlign: "center",
+                    }}
+                  >
+                    You don't have any course Cancel yet
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {getCourseCancel.map((value, index) => {
+                  return (
+                    <View key={value.id}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate("DetailsOnGoing", { value });
+                        }}
                         style={{
-                          width: wp(60),
-                          height: hp(20),
-                          justifyContent: "space-between",
+                          marginHorizontal: 10,
+                          display: "flex",
+                          alignItems: "center",
+                          marginVertical: 10,
                         }}
                       >
-                        <LinearGradient
-                          colors={["transparent", "rgba(0,0,0,0.8)"]}
-                          start={{ x: 0.5, y: 0 }}
-                          end={{ x: 0.5, y: 1 }}
+                        <ImageBackground
+                          source={{ uri: value.trainingCoursePicture }}
+                          resizeMethod="auto"
+                          borderRadius={18}
                           style={{
-                            position: "absolute",
-                            bottom: 0,
-                            width: "100%",
-                            height: hp(20),
-                            borderBottomLeftRadius: 18,
-                            borderBottomRightRadius: 18,
-                          }}
-                        />
-                        <View
-                          style={{
-                            alignItems: "flex-start",
-                            marginTop: 10,
+                            width: wp(65),
+                            height: hp(23),
+                            justifyContent: "space-between",
                           }}
                         >
+                          <LinearGradient
+                            colors={["transparent", "rgba(0,0,0,0.8)"]}
+                            start={{ x: 0.5, y: 0 }}
+                            end={{ x: 0.5, y: 1 }}
+                            style={{
+                              position: "absolute",
+                              bottom: 0,
+                              width: "100%",
+                              height: hp(20),
+                              borderBottomLeftRadius: 18,
+                              borderBottomRightRadius: 18,
+                            }}
+                          />
                           <View
                             style={{
-                              flexDirection: "column",
-                              justifyContent: "center",
                               alignItems: "flex-start",
-                              paddingLeft: 15,
+                              marginTop: 10,
                             }}
                           >
                             <View
                               style={{
-                                borderWidth: 1,
-                                borderRadius: 12,
-                                alignItems: "center",
+                                flexDirection: "column",
                                 justifyContent: "center",
-                                padding: 1,
-                                paddingHorizontal: 5,
-                                height: "auto",
-                                borderColor: Colors.white,
-                                width: "auto",
+                                alignItems: "flex-start",
+                                paddingLeft: 15,
                               }}
                             >
-                              <Text style={{ color: "white" }}>
-                                {value.status}
+                              <View
+                                style={{
+                                  borderWidth: 1,
+                                  borderRadius: 12,
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: 1,
+                                  paddingHorizontal: 5,
+                                  height: "auto",
+                                  borderColor: Colors.white,
+                                  width: "auto",
+                                }}
+                              >
+                                <Text style={{ color: "white" }}>
+                                  {value.status}
+                                </Text>
+                              </View>
+                              <Text
+                                style={{
+                                  marginTop: 5,
+                                  flexShrink: 1,
+                                  flexWrap: "wrap",
+                                  maxWidth: wp(50),
+                                  fontSize: wp(5),
+                                  fontWeight: "800",
+                                  color: "white",
+                                }}
+                              >
+                                {value.trainingCourseTitle}
                               </Text>
                             </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              marginHorizontal: 20,
+                              marginVertical: 15,
+                            }}
+                          >
                             <Text
                               style={{
-                                marginTop: 5,
-                                flexShrink: 1,
-                                flexWrap: "wrap",
-                                maxWidth: wp(50),
-                                fontSize: wp(5),
-                                fontWeight: "800",
+                                fontSize: wp(4),
+                                fontWeight: "600",
                                 color: "white",
                               }}
                             >
-                              {value.trainingCourseTitle}
+                              {value.totalSlot} total Slot
                             </Text>
                           </View>
-                        </View>
-
+                        </ImageBackground>
                         <View
                           style={{
                             flexDirection: "row",
-                            marginHorizontal: 20,
-                            marginVertical: 15,
+                            alignItems: "center",
                           }}
                         >
-                          <Text
+                          <View
                             style={{
-                              fontSize: wp(4),
-                              fontWeight: "600",
-                              color: "white",
+                              marginTop: 10,
+                              width: wp(4),
+                              height: wp(1),
+                              borderRadius: 10,
+                              flexDirection: "row",
+                              marginHorizontal: 1.5,
                             }}
-                          >
-                            {value.totalSlot} total Slot
-                          </Text>
+                          ></View>
                         </View>
-                      </ImageBackground>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginTop: 10,
-                            width: wp(4),
-                            height: wp(1),
-                            borderRadius: 10,
-                            flexDirection: "row",
-                            marginHorizontal: 1.5,
-                          }}
-                        ></View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                ) : null;
-              })}
-            </ScrollView>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
           </View>
         </View>
 
         {/* already have a  certificate */}
         <View style={{ flex: 1 }}>
-          <Certificate />
+          <View
+            entering={FadeInUp.delay((index = 100)).duration(600)}
+            style={{ marginHorizontal: 10, paddingBottom: 40 }}
+          >
+            <View style={{}}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={style.textStyle}>Bird's Certificate</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("SeeAll", {
+                  val: getCourseDone,
+                  getTitle: "Certificate",
+                });
+              }}
+            >
+              <View style={{ paddingBottom: 40 }}>
+                <View
+                  style={{
+                    borderColor: Colors.grey,
+                    width: "90%",
+                    height: hp(13),
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    marginVertical: 10,
+                    marginHorizontal: 20,
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Image
+                    source={require("./../Assets/images/certificate.png")}
+                    style={{
+                      height: wp(15),
+                      width: wp(15),
+                      marginHorizontal: 20,
+                      backgroundColor: "transparent",
+                    }}
+                  />
+                  <Text
+                    style={{
+                      flex: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(3.5),
+                      color: "#404040",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Earn certificate when your bird done training
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
       {loading ? <Loader /> : null}
     </SafeAreaView>
-  );
-};
-
-export const Certificate = () => {
-  return (
-    <View
-      entering={FadeInUp.delay((index = 100)).duration(600)}
-      style={{ marginHorizontal: 10, paddingBottom: 30 }}
-    >
-      <View style={{ marginTop: 10 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={style.textStyle}>Bird's Certificate</Text>
-
-          <TouchableOpacity>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 20,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: wp(4),
-                  fontWeight: "500",
-                  paddingLeft: 5,
-                  color: "green",
-                }}
-              >
-                See all
-              </Text>
-              <MaterialIcons
-                name="keyboard-arrow-right"
-                size={wp(6)}
-                color={"green"}
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <TouchableOpacity>
-        <View style={{ paddingBottom: 30 }}>
-          <View
-            style={{
-              borderColor: Colors.grey,
-              width: "90%",
-              height: hp(13),
-              borderRadius: 10,
-              borderWidth: 2,
-              marginVertical: 10,
-              marginHorizontal: 20,
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Image
-              source={require("./../Assets/images/certificate.jpg")}
-              style={{
-                height: wp(15),
-                width: wp(15),
-                marginHorizontal: 20,
-                backgroundColor: "#fafafa",
-              }}
-            />
-            <Text
-              style={{
-                flex: 1,
-                flexWrap: "wrap",
-                fontSize: wp(3.5),
-                letterSpacing: 0.2,
-                color: "#404040",
-              }}
-            >
-              Earn Certificate when complete traintrainingtraininging
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </View>
   );
 };
 

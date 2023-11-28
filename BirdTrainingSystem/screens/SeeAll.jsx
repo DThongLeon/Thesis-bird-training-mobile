@@ -24,10 +24,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { Colors } from "../constants/theme";
 import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Category } from "../constants/categories";
 import { find, includes } from "lodash";
 import { useNavigation } from "@react-navigation/native";
-import { isMoment } from "moment";
+import moment, { isMoment } from "moment";
 
 const SeeAll = ({ route }) => {
   const navigation = useNavigation();
@@ -40,123 +39,242 @@ const SeeAll = ({ route }) => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
+        {/* Go back button */}
+        <View
+          // entering={FadeIn.delay(200).duration(1000)}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              padding: 2,
+              marginVertical: 30,
+              borderRadius: 9999,
+              marginLeft: 16,
+              backgroundColor: Colors.white,
+            }}
+            onPress={() => {
+              navigation.goBack();
+            }}
+          >
+            <Ionicons
+              name="chevron-back-outline"
+              size={wp(7)}
+              strokeWidth={10}
+              color="black"
+            />
+          </TouchableOpacity>
+          <Text
+            style={{
+              fontSize: wp(5),
+              letterSpacing: 0.2,
+              marginLeft: wp(3),
+              color: "#404040",
+              fontWeight: 800,
+            }}
+          >
+            {route.params.getTitle}
+          </Text>
+        </View>
+
+        {/* content */}
         <View>
-          {getData.map((val, index) => {
-            return val.status === route.params.status ? (
-              <TouchableOpacity
-                onPress={(val) => {
-                  navigation.navigate("DetailsOnGoing", {});
-                }}
-                key={index}
+          {getData.length === 0 ? (
+            <View style={{ paddingBottom: 30 }}>
+              <View
                 style={{
-                  marginTop: 10,
-                  marginHorizontal: 10,
-                  display: "flex",
+                  borderColor: Colors.grey,
+                  width: "90%",
+                  height: hp(8),
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  marginVertical: 10,
+                  marginHorizontal: 20,
+                  justifyContent: "center",
                   alignItems: "center",
                 }}
               >
-                <ImageBackground
-                  source={{ uri: val.trainingCoursePicture }}
-                  resizeMethod="auto"
-                  borderRadius={18}
+                <Text
                   style={{
-                    width: wp(60),
-                    height: hp(20),
-                    justifyContent: "space-between",
+                    flexShrink: 1,
+                    flexWrap: "wrap",
+                    fontSize: wp(4),
+                    width: "auto",
+                    fontWeight: "700",
+                    color: "#404040",
+                    textAlign: "center",
                   }}
                 >
-                  <LinearGradient
-                    colors={["transparent", "rgba(0,0,0,0.8)"]}
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      width: "100%",
-                      height: hp(20),
-                      borderBottomLeftRadius: 18,
-                      borderBottomRightRadius: 18,
+                  You don't have any Course Registered.
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View>
+              {getData.map((value, index) => {
+                console.log('value', value)
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (route.params.getTitle === "Certificate") {
+                        navigation.navigate("Certificate", {
+                          value: getData,
+                        });
+                      } else {
+                        navigation.navigate("DetailsOnGoing", {
+                          value,
+                        });
+                      }
                     }}
-                  />
-                  <View
+                    key={value.id}
                     style={{
-                      alignItems: "flex-start",
-                      marginVertical: 20,
+                      marginTop: 10,
+                      marginHorizontal: 10,
+                      display: "flex",
+                      alignItems: "center",
                     }}
                   >
+                    <ImageBackground
+                      source={{ uri: value.trainingCoursePicture }}
+                      resizeMethod="auto"
+                      borderRadius={18}
+                      style={{
+                        width: wp(70),
+                        height: hp(20),
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <LinearGradient
+                        colors={["transparent", "rgba(0,0,0,0.8)"]}
+                        start={{ x: 0.5, y: 0 }}
+                        end={{ x: 0.5, y: 1 }}
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          width: "100%",
+                          height: hp(20),
+                          borderBottomLeftRadius: 18,
+                          borderBottomRightRadius: 18,
+                        }}
+                      />
+                      <View
+                        style={{
+                          alignItems: "flex-start",
+                          marginVertical: 20,
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "flex-start",
+                            paddingLeft: 15,
+                          }}
+                        >
+                          <View
+                            style={{
+                              borderWidth: 1,
+                              borderRadius: 12,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: 1,
+                              paddingHorizontal: 5,
+                              height: "auto",
+                              borderColor: Colors.white,
+                              width: "auto",
+                            }}
+                          >
+                            <Text style={{ color: "white" }}>
+                              {" "}
+                              {value.status}
+                            </Text>
+                          </View>
+                          <Text
+                            style={{
+                              fontSize: wp(5),
+                              fontWeight: "800",
+                              color: "white",
+                            }}
+                          >
+                            {value.trainingCourseTitle}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          marginHorizontal: 20,
+                          marginVertical: 15,
+                        }}
+                      >
+                        <View style={{ flexDirection: "column" }}>
+                          <Text
+                            style={{
+                              fontSize: wp(4),
+                              fontWeight: "500",
+                              color: "white",
+                            }}
+                          >
+                            Registered Date
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: wp(3.5),
+                              fontWeight: "400",
+                              color: "white",
+                            }}
+                          >
+                            {moment(value.registeredDate, "DDMMYYYY").format(
+                              "DD/MM/YYYY"
+                            )}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            backgroundColor: "white",
+                            height: wp(8),
+                            width: wp(1),
+                            marginHorizontal: 10,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontSize: wp(4),
+                            fontWeight: "600",
+                            color: "white",
+                          }}
+                        >
+                          {value.totalSlot} total Slot
+                        </Text>
+                      </View>
+                    </ImageBackground>
                     <View
                       style={{
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                        paddingLeft: 15,
+                        flexDirection: "row",
+                        alignItems: "center",
                       }}
                     >
                       <View
                         style={{
-                          borderWidth: 1,
-                          borderRadius: 12,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: 1,
-                          paddingHorizontal: 5,
-                          height: "auto",
-                          borderColor: Colors.white,
-                          width: "auto",
+                          marginTop: 10,
+                          width: wp(4),
+                          height: wp(1),
+                          borderRadius: 10,
+                          flexDirection: "row",
+                          marginHorizontal: 1.5,
                         }}
-                      >
-                        <Text style={{ color: "white" }}> {val.status}</Text>
-                      </View>
-                      <Text
-                        style={{
-                          fontSize: wp(5),
-                          fontWeight: "800",
-                          color: "white",
-                        }}
-                      >
-                        {val.trainingCourseTitle}
-                      </Text>
+                      ></View>
                     </View>
-                  </View>
-
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      marginHorizontal: 20,
-                      marginVertical: 15,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: wp(4),
-                        fontWeight: "600",
-                        color: "white",
-                      }}
-                    >
-                      {val.totalSlot} total Slot
-                    </Text>
-                  </View>
-                </ImageBackground>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <View
-                    style={{
-                      marginTop: 10,
-                      width: wp(4),
-                      height: wp(1),
-                      borderRadius: 10,
-                      flexDirection: "row",
-                      marginHorizontal: 1.5,
-                    }}
-                  ></View>
-                </View>
-              </TouchableOpacity>
-            ) : null;
-          })}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

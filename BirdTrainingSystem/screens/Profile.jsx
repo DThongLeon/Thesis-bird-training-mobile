@@ -7,9 +7,10 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
   RefreshControl,
+  Modal,
+  SafeAreaView,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../constants/theme";
 import {
   widthPercentageToDP as wp,
@@ -27,24 +28,30 @@ import {
   MaterialIcons,
   FontAwesome,
 } from "@expo/vector-icons";
-import { StackActions, useFocusEffect, useNavigation } from "@react-navigation/native";
+import {
+  StackActions,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ceil } from "lodash";
 import Loader from "../Components/Loader";
+import styled from "styled-components";
 
-const Profile = ({  route }) => {
-
-  console.log('Profile: ', route)
+const Profile = () => {
   const navigation = useNavigation();
   // loading
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState();
   const [dataBird, setDataBird] = useState([]);
 
   async function getDataBird() {
+    setLoading(true);
     try {
-      setLoading(true);
+      // getData storage
+      const getDataId = await AsyncStorage.getItem("dataId").then((val) =>
+        JSON.parse(val)
+      );
       const res = await axios(
         "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
         {
@@ -52,25 +59,26 @@ const Profile = ({  route }) => {
           headers: {
             Accept: "application/json",
           },
-          // params: { customerId: route.customerId },
-          params: { customerId: route.customerId },
+          params: { customerId: getDataId?.customerId },
         }
       ).finally(() => {
         setLoading(false);
       });
       if (res.status === 200) {
+        const getDefault = await AsyncStorage.getItem("defaultBird").then(
+          (val) => JSON.parse(val)
+        );
+
         const dataFilter = res.data.filter((params) => {
-          return (
-            JSON.stringify(params.birdSpeciesId).indexOf(
-              // route.val
-              route.val
-            ) > -1
-          );
+          if (getDefault === false) {
+            return (
+              JSON.stringify(params.id) === JSON.stringify(getDataId.birdId)
+            );
+          } else {
+            return JSON.stringify(params.isDefault).indexOf(true) > -1;
+          }
         });
-        console.log(res.data)
-        setName(res.data.map((params) => {
-          params.name
-        }));
+
         setDataBird(dataFilter);
       }
     } catch (err) {
@@ -78,11 +86,93 @@ const Profile = ({  route }) => {
     }
   }
 
-  
+  useFocusEffect(
+    useCallback(() => {
+      getDataBird();
+    }, [])
+  );
+
+  // success case
+  const [visible, setVisible] = useState(false);
+
+  const ModalPopUp = ({ children, visible }) => {
+    useEffect(() => {
+      toggleModel();
+    }, [visible]);
+
+    const [showModal, setShowModal] = useState(visible);
+
+    const toggleModel = () => {
+      if (visible) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    };
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const getBirdPicture = dataBird.map((item) => item.picture);
   const getBirdName = dataBird.map((item) => item.name);
   const getBirdSpeciesName = dataBird.map((val) => val.birdSpeciesName);
-  const getBirdSpeciesId = dataBird.map((val) => val.birdSpeciesId)
+  const getBirdDefault = dataBird.map((val) => val?.isDefault);
+
+  const onHandleUpdateDefaultBird = () => {
+    const form = new FormData();
+    form.append("Picture", {
+      uri: dataBird[0].picture,
+      type: "image/jpeg",
+      name: "bird-image",
+    });
+    form.append("Id", dataBird[0].id);
+    form.append("Name", dataBird[0].name);
+    form.append("BirdSpeciesId", dataBird[0].birdSpeciesId);
+    form.append("IsDefault", true);
+
+    try {
+      const response = fetch(
+        "http://13.214.85.41/api/trainingcourse-customer/update-bird",
+        {
+          method: "post",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+          body: form,
+        }
+      ).then((result) => {
+        if (result.status === 200) {
+          navigation.navigate("Home");
+        }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -95,18 +185,6 @@ const Profile = ({  route }) => {
       getDataBird();
     });
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      getDataBird();
-    }, [route])
-  );
-
-
-  useEffect(() => {
-
-
-  }, [route])
 
   return (
     <>
@@ -195,7 +273,6 @@ const Profile = ({  route }) => {
                       }}
                     >
                       {getBirdName[0]}
-                      {name}
                     </Text>
                   </View>
                 )}
@@ -230,7 +307,7 @@ const Profile = ({  route }) => {
           >
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate("EditProfile", { val: route.val, customerId: route.customerId, birdSpeciesId: getBirdSpeciesId });
+                navigation.navigate("EditProfile");
               }}
             >
               <View
@@ -268,9 +345,7 @@ const Profile = ({  route }) => {
           >
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate("SwitchAccount", {
-                  val: route.val
-                });
+                navigation.navigate("SwitchAccount");
               }}
             >
               <View
@@ -320,7 +395,11 @@ const Profile = ({  route }) => {
                   borderColor: Colors.grey,
                 }}
               >
-                <FontAwesome name="credit-card" size={24} color={Colors.primary} />
+                <FontAwesome
+                  name="credit-card"
+                  size={24}
+                  color={Colors.primary}
+                />
                 <Text
                   style={{
                     marginLeft: 24,
@@ -346,13 +425,91 @@ const Profile = ({  route }) => {
           >
             <TouchableOpacity
               onPress={() => {
-                const token = AsyncStorage.getItem("AcceptToken");
-                if (token != null) {
-                  AsyncStorage.removeItem("AcceptToken");
-                  navigation.dispatch(StackActions.popToTop());
-                }
+                setVisible(true);
               }}
             >
+              <ModalPopUp visible={visible}>
+                <View
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: wp(5.5),
+                      color: "#404040",
+                      fontWeight: 800,
+                      textAlign: "center",
+                    }}
+                  >
+                    Are you sure you want to logout this account?
+                  </Text>
+                  <View
+                    style={{
+                      marginTop: 20,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => setVisible(false)}
+                      style={{
+                        backgroundColor: "red",
+                        padding: 10,
+                        borderRadius: 15,
+                        width: 100,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 20,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          width: "100%",
+                          fontSize: wp(4.5),
+                          textAlign: "center",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setVisible(false);
+                        const token = AsyncStorage.getItem("AcceptToken");
+                        if (token != null) {
+                          AsyncStorage.removeItem("AcceptToken");
+                          AsyncStorage.removeItem("dataId");
+                          navigation.dispatch(StackActions.popToTop());
+                        }
+                      }}
+                      style={{
+                        backgroundColor: "blue",
+                        padding: 10,
+                        borderRadius: 15,
+                        width: 100,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          width: "100%",
+                          fontSize: wp(4.5),
+                          textAlign: "center",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Logout
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ModalPopUp>
+
               <View
                 style={{
                   borderBottomWidth: 1,
@@ -377,14 +534,139 @@ const Profile = ({  route }) => {
               </View>
             </TouchableOpacity>
           </View>
+
+          {/* set default bird */}
+          {getBirdDefault[0] === false && (
+            <View
+              style={{
+                width: "80%",
+                marginTop: hp(5),
+                marginLeft: wp(10),
+                borderWidth: 1,
+                borderRadius: 10,
+              }}
+            >
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 10,
+                }}
+              >
+                <TouchableOpacity
+                  type="submit"
+                  onPress={() => setVisible(true)}
+                >
+                  <Text
+                    style={{
+                      fontSize: wp(4),
+                      textAlign: "center",
+                      fontWeight: "500",
+                      color: Colors.primary,
+                    }}
+                  >
+                    Set your bird as the default Bird?
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <ModalPopUp visible={visible}>
+                <View
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: wp(5.5),
+                      color: "#404040",
+                      fontWeight: 800,
+                      textAlign: "center",
+                    }}
+                  >
+                    This action will make this bird will show up on the next
+                    login
+                    {"\n"}
+                    Proceed that?
+                  </Text>
+                  <View
+                    style={{
+                      marginTop: 20,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => setVisible(false)}
+                      style={{
+                        backgroundColor: "red",
+                        padding: 10,
+                        borderRadius: 15,
+                        width: 100,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 20,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          width: "100%",
+                          fontSize: wp(4.5),
+                          textAlign: "center",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setVisible(false);
+                        onHandleUpdateDefaultBird()
+                      }}
+                      style={{
+                        backgroundColor: "blue",
+                        padding: 10,
+                        borderRadius: 15,
+                        width: 100,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          width: "100%",
+                          fontSize: wp(4.5),
+                          textAlign: "center",
+                          color: "#ffffff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Yes
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ModalPopUp>
+            </View>
+          )}
         </ScrollView>
-        {/* {route.map((item, index) => {
-        
-      })} */}
       </SafeAreaView>
       {loading ? <Loader /> : null}
     </>
   );
 };
+
+export const TextLink = styled.TouchableOpacity``;
+
+export const TextLinkContent = styled.Text`
+  justify-content: center;
+  align-items: center;
+  color: ${"black"};
+  font-size: 14px;
+  width: 100%;
+  letter-spacing: 0.3px;
+`;
 
 export default Profile;

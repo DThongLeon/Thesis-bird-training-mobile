@@ -12,6 +12,7 @@ import EditProfile from './EditProfile';
 import SeeAll from './SeeAll';
 import TrainingReport from './TrainingReport';
 import SwitchAccount from './SwitchAccount'
+import Certificate from './Certificate';
 
 export {
     Home,
@@ -27,5 +28,6 @@ export {
     EditProfile,
     SeeAll,
     TrainingReport,
-    SwitchAccount
+    SwitchAccount,
+    Certificate
 }

@@ -22,6 +22,7 @@ import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import * as yup from "yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const statusBarHeight = Constants.statusBarHeight;
 
@@ -29,6 +30,10 @@ const RegisterBirdName = ({ navigation }) => {
   const [selectValue, setSelectedValue] = useState(null);
 
   const [dataSpecies, setDataSpecies] = useState([]);
+
+  const [dataBirdId, setDataBirdId] = useState(null);
+
+  const [dataSpeciesFilter, setDataFilter] = useState(null);
 
   const [text, onChangeText] = useState("");
   const [hidePassword, setHidePassword] = useState(true);
@@ -50,6 +55,8 @@ const RegisterBirdName = ({ navigation }) => {
   };
 
   // get bird species
+  const [dataStorage, setDataStorage] = useState();
+  const [getDefaultBirdFromLogin, setDefaultBirdFromLogin] = useState();
   useEffect(() => {
     fetch("http://13.214.85.41/api/trainingcourse-customer/birdspecies", {
       method: "get",
@@ -60,6 +67,15 @@ const RegisterBirdName = ({ navigation }) => {
       .then((response) => response.json())
       .then((json) => {
         if (json) {
+          const getDataBirdId = AsyncStorage.getItem("dataId").then((res) =>
+            setDataBirdId(JSON.parse(res))
+          );
+          const getDataId = AsyncStorage.getItem("AcceptToken").then((val) => {
+            setDataStorage(JSON.parse(val));
+          });
+          const getDefault = AsyncStorage.getItem("defaultBird").then((val) => {
+            setDefaultBirdFromLogin(JSON.parse(val));
+          });
           setDataSpecies(json);
         }
       })
@@ -73,37 +89,6 @@ const RegisterBirdName = ({ navigation }) => {
       style={{ height: "100%" }}
       keyboardShouldPersistTaps={"handled"}
     >
-      {/* back buttons */}
-      <Animated.View
-        entering={FadeIn.delay(200).duration(500)}
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          position: "absolute",
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            padding: 2,
-            marginVertical: 30,
-            borderRadius: 9999,
-            marginLeft: 20,
-          }}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Ionicons
-            name="chevron-back-outline"
-            size={wp(7)}
-            strokeWidth={10}
-            color="black"
-          />
-        </TouchableOpacity>
-      </Animated.View>
-
       <StyledContainer>
         <StatusBar style="dark" />
         <InnerContainer>
@@ -116,6 +101,8 @@ const RegisterBirdName = ({ navigation }) => {
               navigation.navigate("AddImage", {
                 birdName: values.name,
                 birdSpeciesId: selectValue,
+                storage: dataStorage,
+                birdDefaultLogin: getDefaultBirdFromLogin,
               });
             }}
           >
@@ -148,10 +135,10 @@ const RegisterBirdName = ({ navigation }) => {
                       color: Colors.black,
                       fontSize: 15,
                       fontWeight: "bold",
-                      marginRight: wp(8),
+                      marginRight: wp(2),
                     }}
                   >
-                    Type :
+                    Bird Species:
                   </Text>
                   <View
                     style={{
@@ -163,6 +150,7 @@ const RegisterBirdName = ({ navigation }) => {
                     }}
                   >
                     <Picker
+                      prompt="Choose type of bird species"
                       placeholder="Choose type bird"
                       ref={pickerRef}
                       selectedValue={selectValue}
@@ -171,15 +159,10 @@ const RegisterBirdName = ({ navigation }) => {
                       }}
                       mode="dialog"
                     >
-                      <Picker.Item
-                        style={{fontSize: 20}}
-                        label={'Please choose a type bird'}
-                        value={null}
-                        enabled={false}
-                      ></Picker.Item>
                       {dataSpecies.map((val) => {
                         return (
                           <Picker.Item
+                            key={val.id}
                             label={val.name}
                             value={val.id}
                           ></Picker.Item>
@@ -211,18 +194,6 @@ const RegisterBirdName = ({ navigation }) => {
         </InnerContainer>
       </StyledContainer>
     </ScrollView>
-  );
-};
-
-export const BackgroundImage = ({ children }) => {
-  return (
-    <View>
-      <ImageBackground
-        source={require("./../Assets/images/leaves.jpg")}
-        style={{ height: "100%" }}
-      />
-      <View style={{ position: "absolute" }}>{children}</View>
-    </View>
   );
 };
 
