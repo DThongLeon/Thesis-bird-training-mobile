@@ -8,9 +8,9 @@ import {
   ScrollView,
   RefreshControl,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../constants/theme";
 import {
   widthPercentageToDP as wp,
@@ -477,7 +477,7 @@ const Profile = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
-                        setVisible(true);
+                        setVisible(false);
                         const token = AsyncStorage.getItem("AcceptToken");
                         if (token != null) {
                           AsyncStorage.removeItem("AcceptToken");

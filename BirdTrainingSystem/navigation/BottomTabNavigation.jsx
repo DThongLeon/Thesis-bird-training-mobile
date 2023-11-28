@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import { Home, Workshop, Profile, Progress } from "../screens/index";
+import { Home, Profile, Progress } from "../screens/index";
 import { Colors } from "../constants/theme";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTheme } from "react-native-paper";
 import { StyleSheet, Text } from "react-native";
-import { Ionicons, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 
 const Tab = createMaterialBottomTabNavigator();

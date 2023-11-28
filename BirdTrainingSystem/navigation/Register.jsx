@@ -1,11 +1,6 @@
 import React from "react";
-import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import { Home, Workshop, Profile, Progress } from "../screens/index";
-import { Colors } from "../constants/theme";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTheme } from "react-native-paper";
-import { StyleSheet, Text } from "react-native";
-import { Ionicons, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
+import { StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AddImage, RegisterBirdName } from "../registerBirdPhase";
 const Stack = createStackNavigator();

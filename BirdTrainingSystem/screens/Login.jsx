@@ -76,14 +76,12 @@ const Login = ({ navigation }) => {
   const [visible, setVisible] = useState(false);
 
   const ModalPopUp = ({ children, visible }) => {
-
     useEffect(() => {
       toggleModel();
     }, [visible]);
-    
+
     const [showModal, setShowModal] = useState(visible);
 
-    
     const toggleModel = () => {
       if (visible) {
         setShowModal(true);
@@ -197,16 +195,10 @@ const Login = ({ navigation }) => {
                 setVisible(true);
                 setTimeout(() => {
                   if (dataFilter.length === 0) {
-
                     setVisible(false);
-                    AsyncStorage.setItem(
-                      "defaultBird",
-                      JSON.stringify(true)
-                    );
+                    AsyncStorage.setItem("defaultBird", JSON.stringify(true));
                     navigation.navigate("Register");
-                    
                   } else {
-
                     setVisible(false);
                     // setAsyncStorage to store id customer and bird Id
                     const birdAndCustomer = {
@@ -221,7 +213,7 @@ const Login = ({ navigation }) => {
                       "defaultBird",
                       JSON.stringify(dataFilter[0].isDefault)
                     );
-                    navigation.navigate("Bottom Navigation");
+                    navigation.navigate("BottomTabNavigation");
                   }
                 }, 2000);
                 setLoading(false);
@@ -390,14 +382,6 @@ const Login = ({ navigation }) => {
                       </View>
                     </ErrorPopUp>
                   )}
-                  <Line />
-
-                  <TextLink
-                    type="submit"
-                    onPress={() => navigation.navigate("ForgetPassword")}
-                  >
-                    <TextLinkContent>Forget your password?</TextLinkContent>
-                  </TextLink>
                 </StyledFromArea>
               )}
             </Formik>

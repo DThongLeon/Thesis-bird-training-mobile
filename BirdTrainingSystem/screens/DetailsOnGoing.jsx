@@ -34,7 +34,6 @@ import Loader from "../Components/Loader";
 
 const DetailsOnGoing = ({ route }) => {
   const navigation = useNavigation();
-  console.log(route.params.value);
   const [loading, setLoading] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -391,30 +390,36 @@ const DetailsOnGoing = ({ route }) => {
                     {/* section header */}
                     <View
                       style={{
-                        borderWidth: val.status == "Training" ? 1 : 0,
+                        borderWidth:
+                          route.params.value.status == "Confirmed" ? 1 : 0,
                         borderColor:
-                          val.status == "Training" ? "#404040" : Colors.white,
+                          route.params.value.status == "Confirmed"
+                            ? "#404040"
+                            : Colors.white,
                         height: wp(20),
                         width: "88%",
                         marginLeft: 20,
                         marginRight: 20,
                         borderRadius: 10,
                         backgroundColor:
-                          val.status == "Training"
+                          route.params.value.status == "Confirmed"
                             ? "rgba(0,0,0,0.32)"
                             : Colors.white,
-                        opacity: val.status == "Training" ? 0.3 : 1,
+                        opacity:
+                          route.params.value.status == "Confirmed" ? 0.3 : 1,
                       }}
                       key={index}
                     >
                       {/* clickable to details when trainer finish learning */}
                       <TouchableOpacity
                         onPress={() => {
-                          // navigation.navigate("TrainingReport", {
-                          //   val,
-                          // });
+                          navigation.navigate("TrainingReport", {
+                            val,
+                          });
                         }}
-                        disabled={val.status == "Training"}
+                        disabled={
+                          val.status == "Training" && val.status == "Confirmed"
+                        }
                       >
                         <View
                           style={{
@@ -487,7 +492,7 @@ const DetailsOnGoing = ({ route }) => {
                             </Text>
                           </View>
 
-                          {val.status == "Training" && (
+                          {route.params.value.status == "Confirmed" && (
                             <FontAwesome
                               name={"lock"}
                               size={28}

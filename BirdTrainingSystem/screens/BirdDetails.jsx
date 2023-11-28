@@ -39,7 +39,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-// import { Marquee } from "@animatereactnative/marquee";
 import axios from "axios";
 import {
   StackActions,
@@ -50,7 +49,6 @@ import {
 import MarqueeView from "react-native-marquee-view";
 import Loader from "../Components/Loader";
 import LottieView from "lottie-react-native";
-import { useStripe } from "@stripe/stripe-react-native";
 
 const BirdDetails = ({ route }) => {
   // loading

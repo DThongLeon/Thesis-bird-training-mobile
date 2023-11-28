@@ -160,35 +160,6 @@ const EditProfile = ({ route }) => {
     }, [])
   );
 
-  // useEffect(() => {
-  //   fetch("http://13.214.85.41/api/trainingcourse-customer/birdspecies", {
-  //     method: "get",
-  //     headers: {
-  //       Accept: "application/json",
-  //     },
-  //   })
-  //     .then((response) => response.json())
-  //     .then((json) => {
-  //       if (json) {
-  //         const dataSpecies = route.params.birdSpeciesId;
-
-  //         const filterSpeciesRemainder = baseDataToFilter.filter((val) => {
-  //           return !dataSpecies.includes(val.birdSpeciesId);
-  //         });
-
-  //         const filterSpecies = json.filter((val) => {
-  //           return !filterSpeciesRemainder
-  //             .map((val) => val.birdSpeciesId)
-  //             .includes(val.id);
-  //         });
-  //         setDataSpecies(filterSpecies);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //     });
-  // }, []);
-
   const [selectValue, setSelectedValue] = useState(selectValue);
 
   const pickerRef = useRef();
@@ -232,7 +203,7 @@ const EditProfile = ({ route }) => {
       )
         .then((result) => {
           if (result.status === 200) {
-            navigation.navigate("Bottom Navigation");
+            navigation.navigate("BottomTabNavigation");
           }
         })
         .catch((error) => {

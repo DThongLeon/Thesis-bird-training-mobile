@@ -39,7 +39,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-// import { Marquee } from "@animatereactnative/marquee";
 import axios from "axios";
 import {
   CommonActions,
