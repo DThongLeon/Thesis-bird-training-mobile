@@ -117,8 +117,8 @@ const BirdDetails = ({ route }) => {
     };
     try {
       const res = await axios.post(
-        "http://13.214.85.41/api/trainingcourse-customer/register-trainingcourse"
-        // userData
+        "http://13.214.85.41/api/trainingcourse-customer/register-trainingcourse",
+        userData
       );
       if (res.status === 200) {
         setVisible(true);
@@ -731,7 +731,7 @@ const BirdDetails = ({ route }) => {
                 </Text>
               </ButtonLogin>
               {getErrorCase == true && (
-                <ErrorPopUp error={getError}>
+                <ErrorPopUp error={getErrorCase}>
                   <View
                     style={{
                       alignItems: "center",

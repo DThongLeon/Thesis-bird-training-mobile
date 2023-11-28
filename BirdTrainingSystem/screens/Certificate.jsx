@@ -41,7 +41,7 @@ const Certificate = ({ route }) => {
     setLoading(true);
     try {
       const response = await axios(
-        "http://13.214.85.41/api/trainingcourse-customer/birdcertificate-requestedId",
+        "http://13.214.85.41/api/trainingcourse-customer/birdcertificatepicture-requestedId",
         {
           method: "get",
           headers: {
