@@ -1,11 +1,15 @@
+import { StyleSheet, Text } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { Home, Profile, Progress } from "../screens/index";
 import { Colors } from "../constants/theme";
 import { useTheme } from "react-native-paper";
-import { StyleSheet, Text } from "react-native";
-import { Ionicons, MaterialCommunityIcons, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+  SimpleLineIcons,
+} from "@expo/vector-icons";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -23,7 +27,7 @@ const BottomTabNavigation = () => {
         right: 0,
         left: 0,
         elevation: 0,
-        height: 65,
+        height: 75,
       }}
     >
       {/* Home */}
@@ -36,8 +40,8 @@ const BottomTabNavigation = () => {
             <MaterialCommunityIcons
               color={color}
               name={"home"}
-              size={28}
-              style={{ top: -10 }}
+              size={30}
+              style={{ top: -5 }}
             />
           ),
           tabBarLabel: <Text style={styles.tabBarLabel}>Home</Text>,
@@ -53,8 +57,8 @@ const BottomTabNavigation = () => {
             <Ionicons
               color={color}
               name={"md-stats-chart"}
-              size={24}
-              style={{ top: -10 }}
+              size={30}
+              style={{ top: -5 }}
             />
           ),
           tabBarLabel: <Text style={styles.tabBarLabel}>Progress</Text>,
@@ -70,8 +74,8 @@ const BottomTabNavigation = () => {
             <MaterialCommunityIcons
               color={color}
               name={"account"}
-              size={28}
-              style={{ top: -10 }}
+              size={30}
+              style={{ top: -5 }}
             />
           ),
           tabBarLabel: <Text style={styles.tabBarLabel}>Profile</Text>,
@@ -83,7 +87,7 @@ const BottomTabNavigation = () => {
 
 const styles = StyleSheet.create({
   tabBarLabel: {
-    fontSize: 11,
+    fontSize: 14,
     position: "relative",
     padding: 0,
     bottom: 15,

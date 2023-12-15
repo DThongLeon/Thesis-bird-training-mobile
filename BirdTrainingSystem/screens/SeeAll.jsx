@@ -115,7 +115,6 @@ const SeeAll = ({ route }) => {
           ) : (
             <View>
               {getData.map((value, index) => {
-                console.log('value', value)
                 return (
                   <TouchableOpacity
                     onPress={() => {

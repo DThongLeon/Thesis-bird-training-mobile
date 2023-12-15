@@ -250,9 +250,9 @@ const DetailsOnGoing = ({ route }) => {
                 textAlign: "right",
               }}
             >
-              Training Date
+              Training Date Done
             </Text>
-            {route?.params?.value.startTrainingDate ? (
+            {route?.params?.value.trainingDoneDate ? (
               <View
                 style={{
                   justifyContent: "center",
@@ -283,17 +283,17 @@ const DetailsOnGoing = ({ route }) => {
                   }}
                 />
                 <Text style={style.monthStyle}>
-                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
+                  {moment(route?.params?.value.trainingDoneDate, "DDMMYYYY")
                     .format("MMM")
                     .toUpperCase()}
                   {"-"}
-                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
+                  {moment(route?.params?.value.trainingDoneDate, "DDMMYYYY")
                     .format("DD")
                     .toUpperCase()}
                 </Text>
                 <Text style={style.dateStyle}>
-                  {moment(route?.params?.value.startTrainingDate, "DDMMYYYY")
-                    .format("YY")
+                  {moment(route?.params?.value.trainingDoneDate, "DDMMYYYY")
+                    .format("YYYY")
                     .toUpperCase()}
                 </Text>
               </View>

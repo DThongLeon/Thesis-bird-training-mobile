@@ -171,57 +171,59 @@ const Login = ({ navigation }) => {
         if (result.status === 200) {
           const token = jwtDecode(result.data);
           AsyncStorage.setItem("AcceptToken", JSON.stringify(token));
-          try {
-            async function getSelectDefault() {
-              const res = await axios(
-                "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
-                {
-                  method: "get",
-                  headers: {
-                    Accept: "application/json",
-                  },
-                  params: { customerId: token.id },
-                }
-              ).finally(() => {
-                setLoading(false);
-              });
-
-              if (res.status === 200) {
-                // filter data with default value === true
-                const dataFilter = res.data.filter((params) => {
-                  return JSON.stringify(params.isDefault).indexOf(true) > -1;
-                });
-
-                setVisible(true);
-                setTimeout(() => {
-                  if (dataFilter.length === 0) {
-                    setVisible(false);
-                    AsyncStorage.setItem("defaultBird", JSON.stringify(true));
-                    navigation.navigate("Register");
-                  } else {
-                    setVisible(false);
-                    // setAsyncStorage to store id customer and bird Id
-                    const birdAndCustomer = {
-                      birdId: dataFilter[0].birdSpeciesId,
-                      customerId: dataFilter[0].customerId,
-                    };
-                    AsyncStorage.setItem(
-                      "dataId",
-                      JSON.stringify(birdAndCustomer)
-                    );
-                    AsyncStorage.setItem(
-                      "defaultBird",
-                      JSON.stringify(dataFilter[0].isDefault)
-                    );
-                    navigation.navigate("BottomTabNavigation");
+          if (token.role === "Customer") {
+            try {
+              async function getSelectDefault() {
+                const res = await axios(
+                  "http://13.214.85.41/api/trainingcourse-customer/customer-bird",
+                  {
+                    method: "get",
+                    headers: {
+                      Accept: "application/json",
+                    },
+                    params: { customerId: token.id },
                   }
-                }, 2000);
-                setLoading(false);
+                ).finally(() => {
+                  setLoading(false);
+                });
+                if (res.status === 200) {
+                  // filter data with default value === true
+                  const dataFilter = res.data.filter((params) => {
+                    return JSON.stringify(params.isDefault).indexOf(true) > -1;
+                  });
+                  setVisible(true);
+                  setTimeout(() => {
+                    if (dataFilter.length === 0) {
+                      setVisible(false);
+                      AsyncStorage.setItem("defaultBird", JSON.stringify(true));
+                      navigation.navigate("Register");
+                    } else {
+                      setVisible(false);
+                      // setAsyncStorage to store id customer and bird Id
+                      const birdAndCustomer = {
+                        birdId: dataFilter[0].birdSpeciesId,
+                        customerId: dataFilter[0].customerId,
+                      };
+                      AsyncStorage.setItem(
+                        "dataId",
+                        JSON.stringify(birdAndCustomer)
+                      );
+                      AsyncStorage.setItem(
+                        "defaultBird",
+                        JSON.stringify(dataFilter[0].isDefault)
+                      );
+                      navigation.navigate("BottomTabNavigation");
+                    }
+                  }, 2000);
+                  setLoading(false);
+                }
               }
+              getSelectDefault();
+            } catch (err) {
+              alert(err);
             }
-            getSelectDefault();
-          } catch (err) {
-            alert(err);
+          } else {
+            setError(true);
           }
         } else if (result.status === 400) {
           setTimeout(() => {

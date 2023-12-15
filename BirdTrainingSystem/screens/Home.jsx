@@ -377,7 +377,7 @@ const Home = ({ route }) => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 flexWrap: "wrap",
-                paddingBottom: wp(35),
+                paddingBottom: wp(40),
               }}
             >
               {dataBirdSpecies.map((val, index) => {

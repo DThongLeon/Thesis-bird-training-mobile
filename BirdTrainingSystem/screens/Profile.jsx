@@ -93,6 +93,8 @@ const Profile = () => {
   );
 
   // success case
+  const [visibleLogOut, setVisibleLogOut] = useState(false);
+
   const [visible, setVisible] = useState(false);
 
   const ModalPopUp = ({ children, visible }) => {
@@ -378,7 +380,7 @@ const Profile = () => {
           </View>
 
           {/* Payment or Order */}
-          <View
+          {/* <View
             style={{
               marginTop: 10,
               width: "100%",
@@ -413,7 +415,7 @@ const Profile = () => {
                 </Text>
               </View>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* Log out */}
           <View
@@ -425,10 +427,10 @@ const Profile = () => {
           >
             <TouchableOpacity
               onPress={() => {
-                setVisible(true);
+                setVisibleLogOut(true);
               }}
             >
-              <ModalPopUp visible={visible}>
+              <ModalPopUp visible={visibleLogOut}>
                 <View
                   style={{
                     alignItems: "center",
@@ -452,7 +454,7 @@ const Profile = () => {
                     }}
                   >
                     <TouchableOpacity
-                      onPress={() => setVisible(false)}
+                      onPress={() => setVisibleLogOut(false)}
                       style={{
                         backgroundColor: "red",
                         padding: 10,
@@ -475,9 +477,10 @@ const Profile = () => {
                         Cancel
                       </Text>
                     </TouchableOpacity>
+                    {/* proceed logout */}
                     <TouchableOpacity
                       onPress={() => {
-                        setVisible(false);
+                        setVisibleLogOut(false);
                         const token = AsyncStorage.getItem("AcceptToken");
                         if (token != null) {
                           AsyncStorage.removeItem("AcceptToken");

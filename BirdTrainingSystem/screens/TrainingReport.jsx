@@ -35,7 +35,6 @@ const TrainingReport = ({ route }) => {
 
   const navigation = useNavigation();
 
-  console.log("route.params.val.evidence", typeof route.params.val.evidence);
   return (
     <View>
       <ImageBackground
@@ -241,7 +240,6 @@ const TrainingReport = ({ route }) => {
             }}
             useNativeControls
             resizeMode={ResizeMode.CONTAIN}
-            isLooping
             onPlaybackStatusUpdate={(status) => setStatus(() => status)}
           />
           <Button

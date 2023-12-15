@@ -41,7 +41,7 @@ const Certificate = ({ route }) => {
     setLoading(true);
     try {
       const response = await axios(
-        "http://13.214.85.41/api/trainingcourse-customer/birdcertificatepicture-requestedId",
+        "http://13.214.85.41/api/trainingcourse-customer/birdcertificate-requestedId",
         {
           method: "get",
           headers: {
@@ -64,6 +64,38 @@ const Certificate = ({ route }) => {
     }, [])
   );
 
+  // get pdf view *****************************************
+  const [birdCertificatePDF, setBirdCertificatePDF] = useState("");
+
+  async function getCertificatedCoursePdf() {
+    setLoading(true);
+    try {
+      const response = await axios(
+        "http://13.214.85.41/api/trainingcourse-customer/birdcertificatepicture-requestedId-base64",
+        {
+          method: "get",
+          headers: {
+            Accept: "image/png",
+          },
+          params: { birdTrainingCourseId: route.params.value[0].id },
+        }
+      )
+        .then((res) => {
+          if (res.status === 200) {
+            setBirdCertificatePDF(res.data);
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } catch (error) {}
+  }
+  useFocusEffect(
+    useCallback(() => {
+      getCertificatedCoursePdf();
+    }, [])
+  );
+
   const RefreshCycle = () => {
     setRefreshing(true);
     setLoading(true);
@@ -71,10 +103,9 @@ const Certificate = ({ route }) => {
       setRefreshing(false);
       setLoading(false);
       getCertificatedCourse();
+      getCertificatedCoursePdf();
     }, 1000);
   };
-
-  console.log(birdCertificate.birdCertificateViewModel?.picture);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -179,19 +210,11 @@ const Certificate = ({ route }) => {
           </View>
         </View>
 
-        <View style={{ marginHorizontal: 20, }}>
-          <ImageBackground
-            resizeMethod="auto"
-            style={{
-              width: wp(90),
-              height: hp(35),
-
-              justifyContent: "space-between",
-            }}
-            source={{
-              uri: birdCertificate.birdCertificateViewModel?.picture,
-            }}
-          />
+        <View>
+          <Image
+            style={{ resizeMode: "contain", width: wp(100), height: wp(90) }}
+            source={{ uri: `data:image/png;base64,${birdCertificatePDF}` }}
+          ></Image>
         </View>
       </ScrollView>
       {loading ? <Loader /> : null}

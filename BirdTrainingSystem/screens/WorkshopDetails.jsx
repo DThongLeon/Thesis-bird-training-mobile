@@ -33,7 +33,6 @@ import moment from "moment";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import styled from "styled-components";
-import MapView from "react-native-maps";
 
 const WorkshopDetails = ({ navigation, route }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);

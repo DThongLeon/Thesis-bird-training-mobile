@@ -60,7 +60,6 @@ const EditProfile = ({ route }) => {
     if (!a.canceled) {
       setImage(a.assets[0].uri);
     }
-    console.log("(image)", a.assets[0].uri);
   };
 
   const pickCamera = async () => {
@@ -134,9 +133,7 @@ const EditProfile = ({ route }) => {
         const getDefault = await AsyncStorage.getItem("defaultBird").then(
           (val) => JSON.parse(val)
         );
-        console.log("getDefault", getDefault);
 
-        console.log("result", res.data);
         const dataFilter = res.data.filter((params) => {
           if (getDefault === false) {
             return (
@@ -188,7 +185,6 @@ const EditProfile = ({ route }) => {
     form.append("BirdSpeciesId", customerBirdInfo[0].birdSpeciesId);
     form.append("IsDefault", customerBirdInfo[0].isDefault);
 
-    console.log(form);
     try {
       const response = fetch(
         "http://13.214.85.41/api/trainingcourse-customer/update-bird",
