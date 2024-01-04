@@ -163,6 +163,7 @@ const Certificate = ({ route }) => {
               style={{
                 textAlign: "center",
                 marginRight: 20,
+                marginBottom: 10,
                 fontSize: wp(4.5),
                 fontWeight: "600",
                 color: "#404040",
@@ -176,7 +177,7 @@ const Certificate = ({ route }) => {
                   justifyContent: "center",
                   alignItems: "center",
                   borderRadius: 15,
-                  width: 70,
+                  width: 60,
                   height: 60,
                   backgroundColor: Colors.white,
                   marginRight: 25,
@@ -191,6 +192,16 @@ const Certificate = ({ route }) => {
                   overflow: "hidden",
                 }}
               >
+                <View
+                  style={{
+                    top: -2,
+                    height: 13,
+                    backgroundColor: "red",
+                    width: "100%",
+                    borderTopRightRadius: 15,
+                    borderTopLeftRadius: 15,
+                  }}
+                />
                 <Text style={style.monthStyle}>
                   {moment(birdCertificate.receiveDate, "YYYYMMDD")
                     .format("MMM")
@@ -226,15 +237,14 @@ export default Certificate;
 
 const style = StyleSheet.create({
   monthStyle: {
-    opacity: 0.7,
-    fontSize: wp(4),
+    opacity: 0.9,
+    fontSize: wp(3.5),
     textAlign: "center",
     fontWeight: "400",
     color: "#404040",
-    padding: 2,
   },
   dateStyle: {
-    fontSize: wp(6),
+    fontSize: wp(5),
     textAlign: "center",
     fontWeight: "bold",
     color: Colors.black,

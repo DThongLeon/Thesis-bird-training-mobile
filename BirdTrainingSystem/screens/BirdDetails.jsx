@@ -10,6 +10,7 @@ import {
   RefreshControl,
   FlatList,
   Modal,
+  useWindowDimensions,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Colors } from "../constants/theme";
@@ -49,6 +50,11 @@ import {
 import MarqueeView from "react-native-marquee-view";
 import Loader from "../Components/Loader";
 import LottieView from "lottie-react-native";
+import RenderHtml from "react-native-render-html";
+import {
+  formatCurrency,
+  getSupportedCurrencies,
+} from "react-native-format-currency";
 
 const BirdDetails = ({ route }) => {
   // loading
@@ -286,6 +292,52 @@ const BirdDetails = ({ route }) => {
     handleRegister();
   };
 
+  // get all of the supported currency codes
+  const currencyCodes = getSupportedCurrencies();
+
+  // loop through each currency code and show formatted value
+  const renderCurrency = ({ item }) => {
+    const [valueFormattedWithSymbol, valueFormattedWithoutSymbol, symbol] =
+      formatCurrency({
+        amount: Number(trainingCourse.totalPrice),
+        code: "VND",
+      });
+
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text
+          style={{
+            marginTop: 10,
+            fontSize: wp(7),
+            fontWeight: 600,
+            color: Colors.brownEa,
+            fontSize: wp(6),
+          }}
+        >
+          Price: {" "}
+        </Text>
+        <Text
+          style={{
+            marginTop: 10,
+            fontSize: wp(7),
+            fontWeight: 600,
+            color: Colors.brownEa,
+            fontSize: wp(6),
+          }}
+        >
+          {valueFormattedWithSymbol}
+        </Text>
+      </View>
+    );
+  };
+
+  const { width } = useWindowDimensions();
   return (
     <View
       style={{
@@ -334,7 +386,6 @@ const BirdDetails = ({ route }) => {
       </View>
       {/* title desctip and register button */}
       <View
-        entering={FadeInUp.delay((index = 100)).duration(600)}
         style={{
           borderTopLeftRadius: 40,
           borderTopRightRadius: 40,
@@ -345,7 +396,7 @@ const BirdDetails = ({ route }) => {
           justifyContent: "space-between",
           backgroundColor: "#fafafa",
           paddingTop: 25,
-          marginTop: -35,
+          marginTop: -50,
         }}
       >
         <ScrollView
@@ -372,7 +423,7 @@ const BirdDetails = ({ route }) => {
             >
               {trainingCourse.title}
             </Text>
-            <Text
+            {/* <Text
               style={{
                 marginTop: 10,
                 fontSize: wp(7),
@@ -382,7 +433,12 @@ const BirdDetails = ({ route }) => {
               }}
             >
               Price: {trainingCourse.totalPrice} VND
-            </Text>
+            </Text> */}
+            <FlatList
+              data={currencyCodes.filter((val) => val.code === "VND")}
+              renderItem={renderCurrency}
+              keyExtractor={(code) => code.code}
+            />
           </View>
 
           {/* description */}
@@ -406,7 +462,10 @@ const BirdDetails = ({ route }) => {
               paddingHorizontal: 10,
             }}
           >
-            {trainingCourse.description}
+            <RenderHtml
+              contentWidth={width}
+              source={{ html: trainingCourse?.description }}
+            />
           </Text>
 
           {/* duration and trainer */}

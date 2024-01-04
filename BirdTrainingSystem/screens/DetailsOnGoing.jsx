@@ -102,7 +102,7 @@ const DetailsOnGoing = ({ route }) => {
       >
         <ImageBackground
           source={{ uri: route.params.value.trainingCoursePicture }}
-          resizeMethod="auto"
+          resizeMethod="scale"
           style={{
             height: 200,
             width: wp("100%"),
@@ -116,7 +116,7 @@ const DetailsOnGoing = ({ route }) => {
               position: "absolute",
               bottom: 0,
               width: "100%",
-              height: hp(20),
+              height: hp(30),
             }}
           ></LinearGradient>
           <View
@@ -196,33 +196,76 @@ const DetailsOnGoing = ({ route }) => {
               alignItems: "flex-start",
             }}
           >
-            {route?.params?.value.startTrainingDate ? (
+            {route?.params?.value?.status === "Cancel" && (
               <Text
                 style={{
-                  fontSize: wp(5),
+                  fontSize: wp(6),
                   letterSpacing: 0.2,
-                  marginTop: wp(6),
-                  color: "green",
+                  marginTop: wp(4),
+                  color: "red",
                   fontWeight: 800,
                 }}
               >
-                Assigned
+                Cancel
               </Text>
-            ) : (
+            )}
+            {route?.params?.value?.status === "Registered" && (
               <Text
                 style={{
-                  fontSize: wp(5),
+                  textAlign: "center",
+                  fontSize: wp(6),
                   letterSpacing: 0.2,
                   marginTop: wp(4),
                   color: "#404040",
                   fontWeight: 800,
                 }}
               >
-                Waiting for Assign
+                Waiting assign{"\n"}trainer
+              </Text>
+            )}
+            {route?.params?.value?.status === "TrainingDone" && (
+              <Text
+                style={{
+                  fontSize: wp(6),
+                  letterSpacing: 0.2,
+                  marginTop: wp(4),
+                  color: "green",
+                  fontWeight: 800,
+                }}
+              >
+                Trainer Assigned
+              </Text>
+            )}
+            {route?.params?.value?.status === "Training" && (
+              <Text
+                style={{
+                  fontSize: wp(6),
+                  letterSpacing: 0.2,
+                  marginTop: wp(4),
+                  color: "green",
+                  fontWeight: 800,
+                }}
+              >
+                Trainer Assigned
+              </Text>
+            )}
+            {route?.params?.value?.status === "Confirmed" && (
+              <Text
+                style={{
+                  fontSize: wp(6),
+                  letterSpacing: 0.2,
+                  marginTop: wp(4),
+                  color: "green",
+                  fontWeight: 800,
+                }}
+              >
+                Trainer Assigned
               </Text>
             )}
             <Text
               style={{
+                marginTop: wp(4),
+                textAlign: "center",
                 fontSize: wp(4),
                 letterSpacing: 0.2,
                 color: "#404040",
@@ -234,6 +277,7 @@ const DetailsOnGoing = ({ route }) => {
             </Text>
           </View>
 
+          {/* timetable */}
           <View
             style={{
               flexDirection: "column",
@@ -293,24 +337,100 @@ const DetailsOnGoing = ({ route }) => {
                 </Text>
                 <Text style={style.dateStyle}>
                   {moment(route?.params?.value.trainingDoneDate, "DDMMYYYY")
-                    .format("YYYY")
+                    .format("YY")
                     .toUpperCase()}
                 </Text>
               </View>
             ) : (
               <Text
                 style={{
-                  fontSize: wp(3.5),
+                  fontSize: wp(4),
                   color: "#404040",
-                  fontWeight: 400,
+                  fontWeight: 500,
                 }}
               >
-                Not start yet
+                Not yet
               </Text>
             )}
           </View>
         </View>
 
+        {route?.params?.value?.status === "Confirmed" && (
+          <View style={{ paddingBottom: 10 }}>
+            <View
+              style={{
+                borderColor: Colors.grey,
+                width: "90%",
+                height: hp(13),
+                borderRadius: 10,
+                borderWidth: 2,
+                marginVertical: 10,
+                marginHorizontal: 20,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  flexShrink: 1,
+                  flexWrap: "wrap",
+                  fontSize: wp(5.5),
+                  width: "auto",
+                  fontWeight: "700",
+                  color: "red",
+                  marginBottom: 10,
+                  textAlign: "center",
+                }}
+              >
+                Please bring your bird to our system to start training
+              </Text>
+            </View>
+          </View>
+        )}
+        {route?.params?.value?.status === "TrainingDone" && (
+          <View
+            style={{
+              borderColor: Colors.grey,
+              width: "90%",
+              height: hp(13),
+              borderRadius: 10,
+              borderWidth: 2,
+              marginVertical: 10,
+              marginHorizontal: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                flexShrink: 1,
+                flexWrap: "wrap",
+                fontSize: wp(4),
+                width: "auto",
+                fontWeight: "700",
+                color: "green",
+                marginBottom: 5,
+                textAlign: "center",
+              }}
+            >
+              Your bird's training is COMPLETED
+            </Text>
+            <Text
+              style={{
+                flexShrink: 1,
+                flexWrap: "wrap",
+                fontSize: wp(4),
+                width: "auto",
+                fontWeight: "700",
+                color: "green",
+                marginBottom: 5,
+                textAlign: "center",
+              }}
+            >
+              Please come to our center to complete checkout and receive bird
+            </Text>
+          </View>
+        )}
         {/* Exercise show bird progress  */}
         <Text
           style={{
@@ -417,9 +537,7 @@ const DetailsOnGoing = ({ route }) => {
                             val,
                           });
                         }}
-                        disabled={
-                          val.status == "Training" && val.status == "Confirmed"
-                        }
+                        disabled={route.params.value.status == "Confirmed"}
                       >
                         <View
                           style={{

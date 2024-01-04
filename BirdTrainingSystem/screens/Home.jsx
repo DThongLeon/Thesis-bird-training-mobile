@@ -209,6 +209,7 @@ const Home = ({ route }) => {
     }
   };
 
+
   return (
     <>
       <SafeAreaView>
@@ -238,11 +239,6 @@ const Home = ({ route }) => {
             {getBirdName && (
               <Text style={style.userStyle}>{getBirdName[0]}</Text>
             )}
-          </View>
-          <View style={{ marginRight: 10 }}>
-            <TouchableOpacity onPress={() => {}}>
-              <Ionicons size={25} name="notifications"></Ionicons>
-            </TouchableOpacity>
           </View>
         </View>
         {/* content filter and training program */}
@@ -380,91 +376,97 @@ const Home = ({ route }) => {
                 paddingBottom: wp(40),
               }}
             >
-              {dataBirdSpecies.map((val, index) => {
-                return (
-                  <TouchableOpacity
-                    key={index}
+              {dataBirdSpecies.length === 0 ? (
+                <View
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    top: 0,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
                     style={{
-                      width: wp(44),
-                      height: wp(65),
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      position: "relative",
-                      paddingHorizontal: 16,
-                      paddingVertical: 24,
-                      marginTop: 20,
-                      marginBottom: 10,
-                    }}
-                    onPress={() => {
-                      navigation.navigate("BirdDetails", {
-                        getTrainingCourseId: val.id,
-                        dataCustomer: dataCustomerBird,
-                      });
+                      flexShrink: 1,
+                      flexWrap: "wrap",
+                      fontSize: wp(5.5),
+                      width: "auto",
+                      fontWeight: "700",
+                      color: "#404040",
+                      textAlign: "center",
+                      opacity: 0.5
                     }}
                   >
-                    <Animated.Image
-                      source={{ uri: val.picture }}
+                    No new course added to your bird species !!
+                  </Text>
+                </View>
+              ) : (
+                dataBirdSpecies.map((val, index) => {
+                  return (
+                    <TouchableOpacity
+                      key={index}
                       style={{
                         width: wp(44),
                         height: wp(65),
-                        position: "absolute",
-                        borderRadius: 30,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        position: "relative",
+                        paddingHorizontal: 16,
+                        paddingVertical: 24,
+                        marginTop: 20,
+                        marginBottom: 10,
                       }}
-                    />
-                    <LinearGradient
-                      colors={["transparent", "rgba(0,0,0,0.8)"]}
-                      start={{ x: 0.5, y: 0 }}
-                      end={{ x: 0.5, y: 1 }}
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        width: wp(44),
-                        height: hp(28),
-                        borderBottomLeftRadius: 25,
-                        borderBottomRightRadius: 25,
-                      }}
-                    />
-                    {/* course name */}
-                    <Text
-                      style={{
-                        width: "100%",
-                        fontSize: wp(4.5),
-                        textAlign: "center",
-                        color: "#ffffff",
-                        fontWeight: 600,
+                      onPress={() => {
+                        navigation.navigate("BirdDetails", {
+                          getTrainingCourseId: val.id,
+                          dataCustomer: dataCustomerBird,
+                        });
                       }}
                     >
-                      {val.title}
-                    </Text>
-                    {/* course rating and category */}
-                    <View
-                      style={{
-                        marginTop: 10,
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignContent: "center",
-                      }}
-                    >
+                      <Animated.Image
+                        source={{ uri: val.picture }}
+                        style={{
+                          width: wp(44),
+                          height: wp(65),
+                          position: "absolute",
+                          borderRadius: 30,
+                        }}
+                      />
+                      <LinearGradient
+                        colors={["transparent", "rgba(0,0,0,0.8)"]}
+                        start={{ x: 0.5, y: 0 }}
+                        end={{ x: 0.5, y: 1 }}
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          width: wp(44),
+                          height: hp(28),
+                          borderBottomLeftRadius: 25,
+                          borderBottomRightRadius: 25,
+                        }}
+                      />
+                      {/* course name */}
                       <Text
                         style={{
-                          fontSize: wp(3),
+                          width: "100%",
+                          fontSize: wp(4.5),
+                          textAlign: "center",
                           color: "#ffffff",
-                          fontWeight: 400,
-                          marginRight: 10,
+                          fontWeight: 600,
                         }}
                       >
-                        {val.birdSkills.length} New Skills
+                        {val.title}
                       </Text>
+                      {/* course rating and category */}
                       <View
                         style={{
-                          borderLeftWidth: 1,
-                          borderColor: "#ffffff",
-                          marginRight: 10,
-                        }}
-                      ></View>
-                      <View
-                        style={{
-                          alignItems: "center",
+                          marginTop: 10,
+                          flexDirection: "row",
+                          justifyContent: "center",
+                          alignContent: "center",
                         }}
                       >
                         <Text
@@ -472,19 +474,42 @@ const Home = ({ route }) => {
                             fontSize: wp(3),
                             color: "#ffffff",
                             fontWeight: 400,
+                            marginRight: 10,
                           }}
                         >
-                          <MaterialCommunityIcons
-                            name="timer-outline"
-                            size={wp(3)}
-                          />{" "}
-                          {val.totalSlot} Slot
+                          {val.birdSkills.length} New Skills
                         </Text>
+                        <View
+                          style={{
+                            borderLeftWidth: 1,
+                            borderColor: "#ffffff",
+                            marginRight: 10,
+                          }}
+                        ></View>
+                        <View
+                          style={{
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: wp(3),
+                              color: "#ffffff",
+                              fontWeight: 400,
+                            }}
+                          >
+                            <MaterialCommunityIcons
+                              name="timer-outline"
+                              size={wp(3)}
+                            />{" "}
+                            {val.totalSlot} Slot
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
             </View>
           </View>
         </ScrollView>

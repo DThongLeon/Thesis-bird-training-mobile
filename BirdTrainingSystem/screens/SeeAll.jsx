@@ -108,7 +108,7 @@ const SeeAll = ({ route }) => {
                     textAlign: "center",
                   }}
                 >
-                  You don't have any Course Registered.
+                  You don't have any Course Training Done.
                 </Text>
               </View>
             </View>
@@ -148,15 +148,14 @@ const SeeAll = ({ route }) => {
                     >
                       <LinearGradient
                         colors={["transparent", "rgba(0,0,0,0.8)"]}
-                        start={{ x: 0.5, y: 0 }}
-                        end={{ x: 0.5, y: 1 }}
+                        start={{ x: 1, y: 0 }}
+                        end={{ x: 0, y: 0.6 }}
                         style={{
                           position: "absolute",
                           bottom: 0,
                           width: "100%",
                           height: hp(20),
-                          borderBottomLeftRadius: 18,
-                          borderBottomRightRadius: 18,
+                          borderRadius: 18,
                         }}
                       />
                       <View

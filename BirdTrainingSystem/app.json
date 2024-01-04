@@ -12,10 +12,10 @@
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
-      [
-        "expo-build-properties", 
+      [ 
+        "expo-notifications", 
         {
-          "android": {"usesCleartextTraffic": true}
+          "icon": "../BirdTrainingSystem/Assets/images/iconNoti.png"
         }
       ]
     ],
@@ -35,7 +35,8 @@
     "owner": "thonghoang",
     "android": {
       "package": "com.thesis_birdtraining.academyBird",
-      "versionCode": 1
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json"
     }
   }
 }

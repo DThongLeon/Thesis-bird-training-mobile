@@ -14,12 +14,14 @@ import {
   TrainingReport,
   SwitchAccount,
   Certificate,
+  TrackReceiveBird,
 } from "../screens";
 import Register from "../navigation/Register";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { decode, encode } from "base-64";
 import { NavigationContainer } from "@react-navigation/native";
-import { registerRootComponent } from 'expo';
+import { registerRootComponent } from "expo";
+import { AddImage, RegisterBirdName } from "../registerBirdPhase";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -172,13 +174,37 @@ export default App = () => {
               CardStyleInterpolation: "linear",
             }}
           />
+          <Stack.Screen
+            name="TrackReceiveBird"
+            component={TrackReceiveBird}
+            options={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "column",
+              CardStyleInterpolation: "linear",
+            }}
+          />
+          <Stack.Screen
+            name={"RegisterBirdName"}
+            component={RegisterBirdName}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name={"AddImage"}
+            component={AddImage}
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack.Navigator>
       </ActionSheetProvider>
     </NavigationContainer>
   );
 };
 
-registerRootComponent(App)
+registerRootComponent(App);
 const styles = StyleSheet.create({
   textStyle: {
     fontWeight: 500,

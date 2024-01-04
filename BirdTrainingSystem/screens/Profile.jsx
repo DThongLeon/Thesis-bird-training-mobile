@@ -38,6 +38,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ceil } from "lodash";
 import Loader from "../Components/Loader";
 import styled from "styled-components";
+import TrackReceiveBird from "./TrackReceiveBird";
 
 const Profile = () => {
   const navigation = useNavigation();
@@ -379,6 +380,45 @@ const Profile = () => {
             </TouchableOpacity>
           </View>
 
+          {/* Nhận / Trả chim */}
+          <View
+            style={{
+              marginTop: 10,
+              width: "100%",
+              borderRadius: 10,
+            }}
+          >
+            <TouchableOpacity onPress={() => {
+              navigation.navigate("TrackReceiveBird")
+            }}>
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  flexDirection: "row",
+                  paddingVertical: 10,
+                  paddingHorizontal: 30,
+                  borderColor: Colors.grey,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="bird"
+                  size={24}
+                  color={Colors.primary}
+                />
+                <Text
+                  style={{
+                    marginLeft: 24,
+                    fontSize: wp(4.5),
+                    textAlign: "center",
+                    fontWeight: "500",
+                    color: Colors.primary,
+                  }}
+                >
+                  Send Bird/ Completed Course
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
           {/* Payment or Order */}
           {/* <View
             style={{
@@ -540,25 +580,22 @@ const Profile = () => {
 
           {/* set default bird */}
           {getBirdDefault[0] === false && (
-            <View
-              style={{
-                width: "80%",
-                marginTop: hp(5),
-                marginLeft: wp(10),
-                borderWidth: 1,
-                borderRadius: 10,
-              }}
-            >
+            <TouchableOpacity type="submit" onPress={() => setVisible(true)}>
               <View
                 style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 10,
+                  width: "80%",
+                  marginTop: hp(5),
+                  marginLeft: wp(10),
+                  borderWidth: 1,
+                  borderRadius: 10,
                 }}
               >
-                <TouchableOpacity
-                  type="submit"
-                  onPress={() => setVisible(true)}
+                <View
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 10,
+                  }}
                 >
                   <Text
                     style={{
@@ -570,89 +607,89 @@ const Profile = () => {
                   >
                     Set your bird as the default Bird?
                   </Text>
-                </TouchableOpacity>
-              </View>
+                </View>
 
-              <ModalPopUp visible={visible}>
-                <View
-                  style={{
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: wp(5.5),
-                      color: "#404040",
-                      fontWeight: 800,
-                      textAlign: "center",
-                    }}
-                  >
-                    This action will make this bird will show up on the next
-                    login
-                    {"\n"}
-                    Proceed that?
-                  </Text>
+                <ModalPopUp visible={visible}>
                   <View
                     style={{
-                      marginTop: 20,
-                      flexDirection: "row",
                       alignItems: "center",
                     }}
                   >
-                    <TouchableOpacity
-                      onPress={() => setVisible(false)}
+                    <Text
                       style={{
-                        backgroundColor: "red",
-                        padding: 10,
-                        borderRadius: 15,
-                        width: 100,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 20,
+                        fontSize: wp(5.5),
+                        color: "#404040",
+                        fontWeight: 800,
+                        textAlign: "center",
                       }}
                     >
-                      <Text
-                        style={{
-                          width: "100%",
-                          fontSize: wp(4.5),
-                          textAlign: "center",
-                          color: "#ffffff",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Cancel
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setVisible(false);
-                        onHandleUpdateDefaultBird()
-                      }}
+                      This action will make this bird will show up on the next
+                      login
+                      {"\n"}
+                      Proceed that?
+                    </Text>
+                    <View
                       style={{
-                        backgroundColor: "blue",
-                        padding: 10,
-                        borderRadius: 15,
-                        width: 100,
+                        marginTop: 20,
+                        flexDirection: "row",
                         alignItems: "center",
-                        justifyContent: "center",
                       }}
                     >
-                      <Text
+                      <TouchableOpacity
+                        onPress={() => setVisible(false)}
                         style={{
-                          width: "100%",
-                          fontSize: wp(4.5),
-                          textAlign: "center",
-                          color: "#ffffff",
-                          fontWeight: 600,
+                          backgroundColor: "red",
+                          padding: 10,
+                          borderRadius: 15,
+                          width: 100,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: 20,
                         }}
                       >
-                        Yes
-                      </Text>
-                    </TouchableOpacity>
+                        <Text
+                          style={{
+                            width: "100%",
+                            fontSize: wp(4.5),
+                            textAlign: "center",
+                            color: "#ffffff",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Cancel
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setVisible(false);
+                          onHandleUpdateDefaultBird();
+                        }}
+                        style={{
+                          backgroundColor: "blue",
+                          padding: 10,
+                          borderRadius: 15,
+                          width: 100,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            width: "100%",
+                            fontSize: wp(4.5),
+                            textAlign: "center",
+                            color: "#ffffff",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Yes
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              </ModalPopUp>
-            </View>
+                </ModalPopUp>
+              </View>
+            </TouchableOpacity>
           )}
         </ScrollView>
       </SafeAreaView>

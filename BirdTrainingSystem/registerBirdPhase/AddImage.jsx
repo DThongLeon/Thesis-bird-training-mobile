@@ -29,6 +29,7 @@ import { jwtDecode } from "jwt-decode";
 import { decode, encode } from "base-64";
 import axios from "axios";
 import LottieView from "lottie-react-native";
+import Loader from "../Components/Loader";
 
 if (!global.btoa) {
   global.btoa = encode;
@@ -40,6 +41,52 @@ if (!global.atob) {
 
 const AddImage = ({ route }) => {
   const navigation = useNavigation();
+  // loading
+  const [loading, setLoading] = useState(false);
+
+  // fail case
+  const [getError, setError] = useState(false);
+
+  const ErrorPopUp = ({ children, error }) => {
+    const [errModal, setErrModal] = useState(error);
+
+    useEffect(() => {
+      toggleErr();
+    }, [error]);
+    const toggleErr = () => {
+      if (error) {
+        setErrModal(true);
+      } else {
+        setErrModal(false);
+      }
+    };
+    return (
+      <Modal transparent error={errModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: "#fafafa",
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 20,
+              elevation: 10,
+            }}
+          >
+            {children}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const { showActionSheetWithOptions } = useActionSheet();
 
   const [profilePicture, setProfilePicture] = useState("");
@@ -110,9 +157,10 @@ const AddImage = ({ route }) => {
   };
 
   const onSubmitForm = () => {
+    setLoading(true);
     const form = new FormData();
     form.append("Picture", {
-      uri: image,
+      uri: image || null,
       type: "image/jpeg",
       name: "bird-image",
     });
@@ -135,6 +183,7 @@ const AddImage = ({ route }) => {
       )
         .then((res) => res.json())
         .then((val) => {
+          setLoading(true);
           setVisible(true);
           setTimeout(() => {
             const birdAndCustomer = {
@@ -143,12 +192,20 @@ const AddImage = ({ route }) => {
             };
             AsyncStorage.setItem("dataId", JSON.stringify(birdAndCustomer));
             setVisible(false);
+            if(route.params.birdDefaultLogin === false) {
             navigation.navigate("Home");
+            } else {
+              navigation.navigate("BottomTabNavigation");
+            }
           }, 2000);
+        })
+        .finally(() => {
+          setLoading(false);
+        })
+        .catch(() => {
+          setError(true);
         });
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   };
 
   const [visible, setVisible] = useState(false);
@@ -197,8 +254,7 @@ const AddImage = ({ route }) => {
   return (
     <View style={{ height: "100%" }}>
       {/* back button */}
-      <Animated.View
-        entering={FadeIn.delay(200).duration(500)}
+      <View
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
@@ -225,7 +281,7 @@ const AddImage = ({ route }) => {
             color="black"
           />
         </TouchableOpacity>
-      </Animated.View>
+      </View>
       {/* content add image action sheet and camera */}
       <StyledContainer>
         <LoginPageTitle>
@@ -352,9 +408,52 @@ const AddImage = ({ route }) => {
             >
               <ButtonText>Next</ButtonText>
             </TouchableOpacity>
+            {getError == true && (
+              <ErrorPopUp error={getError}>
+                <View
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      setError(false);
+                    }}
+                    style={{
+                      alignItems: "flex-end",
+                      width: "100%",
+                    }}
+                  >
+                    <Ionicons name="md-close-outline" size={30} color="black" />
+                  </TouchableOpacity>
+                  <LottieView
+                    source={require("./../Assets/loading/error.json")}
+                    autoPlay
+                    loop={true}
+                    style={{
+                      top: -20,
+                      width: 250,
+                      height: 250,
+                    }}
+                  ></LottieView>
+                  <Text
+                    style={{
+                      top: -20,
+                      fontSize: wp(5),
+                      color: "red",
+                      fontWeight: 800,
+                      textAlign: "center",
+                    }}
+                  >
+                    Error occurred {"\n"} Please choose an image for your bird!!
+                  </Text>
+                </View>
+              </ErrorPopUp>
+            )}
           </StyledFromArea>
         </InnerContainer>
       </StyledContainer>
+      {loading ? <Loader /> : null}
     </View>
   );
 };
