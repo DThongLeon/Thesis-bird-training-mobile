@@ -64,6 +64,38 @@ const Certificate = ({ route }) => {
     }, [])
   );
 
+  // get pdf view *****************************************
+  const [birdCertificatePDF, setBirdCertificatePDF] = useState("");
+
+  async function getCertificatedCoursePdf() {
+    setLoading(true);
+    try {
+      const response = await axios(
+        "http://13.214.85.41/api/trainingcourse-customer/birdcertificatepicture-requestedId-base64",
+        {
+          method: "get",
+          headers: {
+            Accept: "image/png",
+          },
+          params: { birdTrainingCourseId: route.params.value[0].id },
+        }
+      )
+        .then((res) => {
+          if (res.status === 200) {
+            setBirdCertificatePDF(res.data);
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } catch (error) {}
+  }
+  useFocusEffect(
+    useCallback(() => {
+      getCertificatedCoursePdf();
+    }, [])
+  );
+
   const RefreshCycle = () => {
     setRefreshing(true);
     setLoading(true);
@@ -71,10 +103,9 @@ const Certificate = ({ route }) => {
       setRefreshing(false);
       setLoading(false);
       getCertificatedCourse();
+      getCertificatedCoursePdf();
     }, 1000);
   };
-
-  console.log(birdCertificate.birdCertificateViewModel?.picture);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -132,6 +163,7 @@ const Certificate = ({ route }) => {
               style={{
                 textAlign: "center",
                 marginRight: 20,
+                marginBottom: 10,
                 fontSize: wp(4.5),
                 fontWeight: "600",
                 color: "#404040",
@@ -145,7 +177,7 @@ const Certificate = ({ route }) => {
                   justifyContent: "center",
                   alignItems: "center",
                   borderRadius: 15,
-                  width: 70,
+                  width: 60,
                   height: 60,
                   backgroundColor: Colors.white,
                   marginRight: 25,
@@ -160,6 +192,16 @@ const Certificate = ({ route }) => {
                   overflow: "hidden",
                 }}
               >
+                <View
+                  style={{
+                    top: -2,
+                    height: 13,
+                    backgroundColor: "red",
+                    width: "100%",
+                    borderTopRightRadius: 15,
+                    borderTopLeftRadius: 15,
+                  }}
+                />
                 <Text style={style.monthStyle}>
                   {moment(birdCertificate.receiveDate, "YYYYMMDD")
                     .format("MMM")
@@ -179,19 +221,11 @@ const Certificate = ({ route }) => {
           </View>
         </View>
 
-        <View style={{ marginHorizontal: 20, }}>
-          <ImageBackground
-            resizeMethod="auto"
-            style={{
-              width: wp(90),
-              height: hp(35),
-
-              justifyContent: "space-between",
-            }}
-            source={{
-              uri: birdCertificate.birdCertificateViewModel?.picture,
-            }}
-          />
+        <View>
+          <Image
+            style={{ resizeMode: "contain", width: wp(100), height: wp(90) }}
+            source={{ uri: `data:image/png;base64,${birdCertificatePDF}` }}
+          ></Image>
         </View>
       </ScrollView>
       {loading ? <Loader /> : null}
@@ -203,15 +237,14 @@ export default Certificate;
 
 const style = StyleSheet.create({
   monthStyle: {
-    opacity: 0.7,
-    fontSize: wp(4),
+    opacity: 0.9,
+    fontSize: wp(3.5),
     textAlign: "center",
     fontWeight: "400",
     color: "#404040",
-    padding: 2,
   },
   dateStyle: {
-    fontSize: wp(6),
+    fontSize: wp(5),
     textAlign: "center",
     fontWeight: "bold",
     color: Colors.black,

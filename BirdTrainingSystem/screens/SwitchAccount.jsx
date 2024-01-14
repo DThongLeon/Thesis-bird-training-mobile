@@ -328,11 +328,7 @@ const SwitchAccount = ({ route }) => {
                       "defaultBird",
                       JSON.stringify(false)
                     );
-                    const setBirdSpecies = AsyncStorage.setItem(
-                      "setBirdSpecies",
-                      JSON.stringify(dataCustomerBird)
-                    );
-                    navigation.navigate("Register");
+                    navigation.navigate("RegisterBirdName");
                   }}
                   style={{
                     backgroundColor: "blue",
@@ -500,7 +496,7 @@ const SwitchAccount = ({ route }) => {
                           Bird Name: {val.name}
                         </Text>
                         <Text
-                          numberOfLines={2}
+                          numberOfLines={1}
                           style={{
                             width: wp(45),
                             fontSize: wp(3),

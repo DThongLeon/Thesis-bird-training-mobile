@@ -11,29 +11,32 @@
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
+      ],
+      [ 
+        "expo-notifications", 
+        {
+          "icon": "../BirdTrainingSystem/Assets/images/iconNoti.png"
+        }
       ]
     ],
     "name": "Thesis-Academy",
-    "slug": "thesis-birdtraining",
+    "slug": "thesis-birdtraining2",
     "icon": "././Assets/images/02-15.png",
+    
     "version": "1.0.0",
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "87c44b7f-4041-4d6f-b3f7-5b656464c7cf"
+        "projectId": "b690b9fd-9cee-4dbb-bdab-0a5e6bdc8cd4"
       }
     },
-    "owner": "thonghd2",
+    "owner": "thonghoang",
     "android": {
-      "package": "com.thonghd2.thesisbirdtraining",
+      "package": "com.thesis_birdtraining.academyBird",
       "versionCode": 1,
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyBjUrLfuYv0VjlcBd9AYqT-OqUoDnYe5iA"
-        }
-      }
+      "googleServicesFile": "./google-services.json"
     }
   }
 }

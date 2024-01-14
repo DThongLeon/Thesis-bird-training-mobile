@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "918153007931",
+    "project_id": "thesis-bird",
+    "storage_bucket": "thesis-bird.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918153007931:android:7e606970bb5e454459dd1e",
+        "android_client_info": {
+          "package_name": "com.thesis_birdtraining.academyBird"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWRMkAjAyLmvxskhWZT8ZOTnFTIfElE-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

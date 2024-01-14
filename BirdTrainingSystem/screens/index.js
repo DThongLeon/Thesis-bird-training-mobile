@@ -13,6 +13,7 @@ import SeeAll from './SeeAll';
 import TrainingReport from './TrainingReport';
 import SwitchAccount from './SwitchAccount'
 import Certificate from './Certificate';
+import TrackReceiveBird from './TrackReceiveBird';
 
 export {
     Home,
@@ -29,5 +30,6 @@ export {
     SeeAll,
     TrainingReport,
     SwitchAccount,
-    Certificate
+    Certificate,
+    TrackReceiveBird
 }
