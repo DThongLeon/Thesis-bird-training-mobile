@@ -43,7 +43,7 @@ const RegisterBirdName = ({ navigation }) => {
   const pickerRef = useRef();
 
   const nameValidationSchema = yup.object().shape({
-    name: yup.string("").required("Bird Name is Required").matches("^[a-zA-Z0-9_]{3,20}$", "Name is not valid, please try again!"),
+    name: yup.string("").required("Bird Name is Required").matches("^[a-zA-Z0-9 _]{3,20}$", "Name is not valid, please try again!"),
   });
 
   open = () => {
