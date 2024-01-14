@@ -314,8 +314,7 @@ const Progress = ({ route }) => {
       minimumInterval: 5000, // 15 minutes
       stopOnTerminate: false, // android only,
       startOnBoot: true, // android only
-    },
-    );
+    });
   }
 
   useFocusEffect(
@@ -355,6 +354,10 @@ const Progress = ({ route }) => {
 
   const getCourseDone = getDataCourseRegister.filter((par) => {
     return JSON.stringify(par.status).indexOf("TrainingDone") > -1;
+  });
+
+  const getCourseComplete = getDataCourseRegister.filter((par) => {
+    return JSON.stringify(par.status).indexOf("Complete") > -1;
   });
 
   {
@@ -913,7 +916,7 @@ const Progress = ({ route }) => {
               </ScrollView>
             )}
 
-            {/* Training Done */}
+            {/* Ready to Pickup */}
             <View style={{ marginTop: 5 }}>
               <View
                 style={{
@@ -1378,7 +1381,7 @@ const Progress = ({ route }) => {
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate("SeeAll", {
-                  val: getCourseDone,
+                  val: getCourseComplete,
                   getTitle: "Certificate",
                 });
               }}
