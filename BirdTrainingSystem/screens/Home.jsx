@@ -11,6 +11,7 @@ import {
   Pressable,
   SafeAreaView,
   RefreshControl,
+  Modal,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -209,6 +210,10 @@ const Home = ({ route }) => {
     }
   };
 
+  const [isModalVisible, setModalVisible] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
 
   return (
     <>
@@ -290,69 +295,6 @@ const Home = ({ route }) => {
               />
             </View>
           </View>
-          {/* Filter section */}
-          <View style={{ marginTop: 20 }}>
-            <Text style={style.textStyle}>Categories</Text>
-            <View style={{ marginHorizontal: 10 }}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {filterCart
-                  .sort((a, b) => {
-                    if (a.id < b.id) return -1;
-                    if (a.id > b.id) return 1;
-                    return 0;
-                  })
-                  .map((value, index) => {
-                    return (
-                      <TouchableOpacity
-                        onPress={() => {
-                          setColorSelect(index);
-                          onFilterSelect(value.name);
-                        }}
-                        key={index}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginTop: 8,
-                            width: wp(25),
-                          }}
-                        >
-                          <Text
-                            style={{
-                              textAlign: "center",
-                              color:
-                                index === (colorSelect || 0)
-                                  ? Colors.red
-                                  : "#404040",
-
-                              fontWeight:
-                                index === (colorSelect || 0) ? 700 : 500,
-                              fontSize: wp(4),
-                            }}
-                          >
-                            {value.name}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            marginTop: 5,
-                            borderWidth: 4,
-                            borderRadius: 999,
-                            borderColor:
-                              index === (colorSelect || 0)
-                                ? Colors.red
-                                : Colors.offWhite,
-                          }}
-                        ></View>
-                      </TouchableOpacity>
-                    );
-                  })}
-              </ScrollView>
-            </View>
-          </View>
 
           {/*Show all course show  */}
           <View style={{ flex: 1 }}>
@@ -360,9 +302,144 @@ const Home = ({ route }) => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
+                marginTop: 20,
+                justifyContent: "space-between",
               }}
             >
               <Text style={style.textStyle}>Training Program</Text>
+              <View style={{ marginRight: 40 }}>
+                <TouchableOpacity onPress={toggleModal}>
+                  <Ionicons name="options-outline" size={35} color="black" />
+                </TouchableOpacity>
+              </View>
+
+              <Modal visible={isModalVisible} transparent>
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    justifyContent: "center",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: "40%",
+                      height: "80%",
+                      backgroundColor: "#fafafa",
+                      paddingVertical: 30,
+                      borderRadius: 20,
+                      elevation: 10,
+                      marginRight: 10,
+                    }}
+                  >
+                    {/* FILTER section */}
+                    <View
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-around",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          marginLeft: 10,
+                          fontSize: wp(5.5),
+                          fontWeight: "800",
+                          color: "#404040",
+                          width: 100,
+                        }}
+                      >
+                        Filter Courses
+                      </Text>
+                      <TouchableOpacity onPress={toggleModal}>
+                        <Ionicons
+                          name="md-close-outline"
+                          size={35}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View
+                      style={{
+                        marginTop: 20,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      }}
+                    >
+                      <View
+                        style={{
+                          marginHorizontal: 10,
+                          height: "95%",
+                          width: "100%",
+                        }}
+                      >
+                        <ScrollView showsHorizontalScrollIndicator={false}>
+                          {filterCart
+                            .sort((a, b) => {
+                              if (a.id < b.id) return -1;
+                              if (a.id > b.id) return 1;
+                              return 0;
+                            })
+                            .map((value, index) => {
+                              return (
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setColorSelect(index);
+                                    onFilterSelect(value.name);
+                                  }}
+                                  key={index}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <View
+                                    style={{
+                                      marginTop: 8,
+                                      width: wp(25),
+                                    }}
+                                  >
+                                    <Text
+                                      style={{
+                                        textAlign: "center",
+                                        color:
+                                          index === (colorSelect || 0)
+                                            ? Colors.red
+                                            : "#404040",
+
+                                        fontWeight:
+                                          index === (colorSelect || 0)
+                                            ? 700
+                                            : 500,
+                                        fontSize: wp(4),
+                                      }}
+                                    >
+                                      {value.name}
+                                    </Text>
+                                  </View>
+                                  <View
+                                    style={{
+                                      marginTop: 5,
+                                      borderWidth: 4,
+                                      borderRadius: 999,
+                                      borderColor:
+                                        index === (colorSelect || 0)
+                                          ? Colors.red
+                                          : Colors.offWhite,
+                                    }}
+                                  ></View>
+                                </TouchableOpacity>
+                              );
+                            })}
+                        </ScrollView>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
             {/* inside course bird */}
             <View
@@ -397,7 +474,7 @@ const Home = ({ route }) => {
                       fontWeight: "700",
                       color: "#404040",
                       textAlign: "center",
-                      opacity: 0.5
+                      opacity: 0.5,
                     }}
                   >
                     No new course added to your bird species !!

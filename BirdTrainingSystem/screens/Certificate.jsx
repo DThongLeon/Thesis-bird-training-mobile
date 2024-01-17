@@ -65,7 +65,7 @@ const Certificate = ({ route }) => {
   );
 
   // get pdf view *****************************************
-  const [birdCertificatePDF, setBirdCertificatePDF] = useState("");
+  const [birdCertificatePDF, setBirdCertificatePDF] = useState(null);
 
   async function getCertificatedCoursePdf() {
     setLoading(true);
@@ -83,6 +83,8 @@ const Certificate = ({ route }) => {
         .then((res) => {
           if (res.status === 200) {
             setBirdCertificatePDF(res.data);
+          } else if (res.status === 404) {
+            setBirdCertificatePDF(null);
           }
         })
         .finally(() => {
@@ -107,6 +109,8 @@ const Certificate = ({ route }) => {
     }, 1000);
   };
 
+  console.log("birdCertificatePDF :>> ", birdCertificatePDF);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView
@@ -114,119 +118,164 @@ const Certificate = ({ route }) => {
           <RefreshControl refreshing={refreshing} onRefresh={RefreshCycle} />
         }
       >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "column",
-              marginLeft: 10,
-            }}
-          >
-            <Text
+        {birdCertificatePDF === null ? (
+          <View style={{ paddingBottom: 30, marginTop: 40 }}>
+            <View
               style={{
-                textAlign: "left",
-                fontSize: wp(5.5),
-                fontWeight: "600",
-                color: "blue",
+                borderColor: Colors.grey,
+                width: "90%",
+                height: "100%",
+                borderRadius: 10,
+                borderWidth: 2,
+                marginVertical: 10,
+                marginHorizontal: 20,
+                justifyContent: "center",
+                alignItems: "center",
+                paddingHorizontal: 5,
               }}
             >
-              Course:
-            </Text>
-            <Text
-              style={{
-                textAlign: "center",
-                marginRight: 15,
-                fontSize: wp(5.5),
-                fontWeight: "600",
-                color: "#404040",
-              }}
-            >
-              {birdCertificate.birdCertificateViewModel?.title}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              alignItems: "flex-end",
-              flexDirection: "column",
-              justifyContent: "center",
-              marginVertical: 20,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                marginRight: 20,
-                marginBottom: 10,
-                fontSize: wp(4.5),
-                fontWeight: "600",
-                color: "#404040",
-              }}
-            >
-              Received
-            </Text>
-            {birdCertificate && (
-              <View
+              <Text
                 style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                  borderRadius: 15,
-                  width: 60,
-                  height: 60,
-                  backgroundColor: Colors.white,
-                  marginRight: 25,
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 1,
-                    height: 5,
-                  },
-                  shadowOpacity: 0.32,
-                  shadowRadius: 5.46,
-                  elevation: 15,
-                  overflow: "hidden",
+                  flexShrink: 1,
+                  flexWrap: "wrap",
+                  fontSize: wp(4),
+                  width: "auto",
+                  fontWeight: "700",
+                  color: "red",
+                  textAlign: "center",
                 }}
               >
-                <View
+                Error occurred due to unexpected event happened during training
+                process.
+                {"\n"} {"\n"} {"\n"}
+                Your bird did not complete training totally so that certificate
+                will not be generate for your bird !!
+                {"\n"} {"\n"} {"\n"}
+                We sorry for this inconvenient
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "column",
+                  marginLeft: 10,
+                }}
+              >
+                <Text
                   style={{
-                    top: -2,
-                    height: 13,
-                    backgroundColor: "red",
-                    width: "100%",
-                    borderTopRightRadius: 15,
-                    borderTopLeftRadius: 15,
+                    textAlign: "left",
+                    fontSize: wp(5.5),
+                    fontWeight: "600",
+                    color: "blue",
                   }}
-                />
-                <Text style={style.monthStyle}>
-                  {moment(birdCertificate.receiveDate, "YYYYMMDD")
-                    .format("MMM")
-                    .toUpperCase()}
-                  -
-                  {moment(birdCertificate.receiveDate, "YYYYMMDD")
-                    .format("YY")
-                    .toUpperCase()}
+                >
+                  Course:
                 </Text>
-                <Text style={style.dateStyle}>
-                  {moment(birdCertificate.receiveDate, "YYYYMMDD")
-                    .format("DD")
-                    .toUpperCase()}
+                <Text
+                  style={{
+                    textAlign: "center",
+                    marginRight: 15,
+                    fontSize: wp(5.5),
+                    fontWeight: "600",
+                    color: "#404040",
+                  }}
+                >
+                  {birdCertificate.birdCertificateViewModel?.title}
                 </Text>
               </View>
-            )}
-          </View>
-        </View>
 
-        <View>
-          <Image
-            style={{ resizeMode: "contain", width: wp(100), height: wp(90) }}
-            source={{ uri: `data:image/png;base64,${birdCertificatePDF}` }}
-          ></Image>
-        </View>
+              <View
+                style={{
+                  alignItems: "flex-end",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  marginVertical: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: "center",
+                    marginRight: 20,
+                    marginBottom: 10,
+                    fontSize: wp(4.5),
+                    fontWeight: "600",
+                    color: "#404040",
+                  }}
+                >
+                  Received
+                </Text>
+                {birdCertificate && (
+                  <View
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 15,
+                      width: 60,
+                      height: 60,
+                      backgroundColor: Colors.white,
+                      marginRight: 25,
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 1,
+                        height: 5,
+                      },
+                      shadowOpacity: 0.32,
+                      shadowRadius: 5.46,
+                      elevation: 15,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <View
+                      style={{
+                        top: -2,
+                        height: 13,
+                        backgroundColor: "red",
+                        width: "100%",
+                        borderTopRightRadius: 15,
+                        borderTopLeftRadius: 15,
+                      }}
+                    />
+                    <Text style={style.monthStyle}>
+                      {moment(birdCertificate.receiveDate, "YYYYMMDD")
+                        .format("MMM")
+                        .toUpperCase()}
+                      -
+                      {moment(birdCertificate.receiveDate, "YYYYMMDD")
+                        .format("YY")
+                        .toUpperCase()}
+                    </Text>
+                    <Text style={style.dateStyle}>
+                      {moment(birdCertificate.receiveDate, "YYYYMMDD")
+                        .format("DD")
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View>
+              <Image
+                style={{
+                  resizeMode: "contain",
+                  width: wp(100),
+                  height: wp(90),
+                }}
+                source={{ uri: `data:image/png;base64,${birdCertificatePDF}` }}
+              ></Image>
+            </View>
+          </>
+        )}
       </ScrollView>
       {loading ? <Loader /> : null}
     </SafeAreaView>
