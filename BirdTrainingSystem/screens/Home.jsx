@@ -159,6 +159,7 @@ const Home = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       getCategoryFilter();
+      setColorSelect()
     }, [])
   );
 
